@@ -14,7 +14,9 @@ interface Props {
   onEdit: (nodeId: number, node: Partial<Node>) => void,
 }
 
-const NodeItem: React.FC<Props> = ({ node, level, onToggle, onDelete, onEdit }: Props): JSX.Element => {
+const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit }: Props): JSX.Element => {
+  console.log(`RENDU ${node.node_id}`)
+
   return (
     <>
       <div className={cn(`border shadow rounded-lg mb-4`, {
@@ -56,6 +58,6 @@ const NodeItem: React.FC<Props> = ({ node, level, onToggle, onDelete, onEdit }: 
       }
     </>
   )
-}
+})
 
 export default NodeItem
