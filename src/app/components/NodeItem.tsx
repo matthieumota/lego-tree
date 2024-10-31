@@ -10,9 +10,10 @@ interface Props {
   level: number,
   onToggle: (nodeId: number) => void,
   onDelete: (nodeId: number) => void,
+  onEdit: (nodeId: number, node: Partial<NodeClient>) => void,
 }
 
-const NodeItem: React.FC<Props> = ({ node, level, onToggle, onDelete }: Props): JSX.Element => {
+const NodeItem: React.FC<Props> = ({ node, level, onToggle, onDelete, onEdit }: Props): JSX.Element => {
   return (
     <>
       <div className={cn(`border shadow rounded-lg mb-4`, {
@@ -27,6 +28,8 @@ const NodeItem: React.FC<Props> = ({ node, level, onToggle, onDelete }: Props): 
           </div>
           <div>
             <Badge status={node.status} />
+
+            <button onClick={() => onEdit(node.node_id, { name: 'test' })}>Modifier</button>
             <button onClick={() => onDelete(node.node_id)}>X</button>
           </div>
         </div>
@@ -42,7 +45,7 @@ const NodeItem: React.FC<Props> = ({ node, level, onToggle, onDelete }: Props): 
       {node.childrens.length > 0 && node.open &&
         <>
           {node.childrens.map((child) => (
-            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} />
+            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} />
           ))}
         </>
       }
