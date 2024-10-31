@@ -2,23 +2,29 @@
 
 import React, { useState } from 'react'
 import NodeItem from './NodeItem'
-import { Node } from '../api/nodes/route'
 
 let nextId = 106
 
-export interface NodeClient extends Node {
-  childrens: Array<NodeClient>
+export interface Node {
+  node_id: number
+  name: string
+  type: string
+  status: string
+  description: string
+  start_date: string
+  end_date: string
+  childrens: Array<Node>
   open: boolean
 }
 
-const updateAllNode = (nodes: Array<NodeClient>, update: Partial<NodeClient>): Array<NodeClient> => {
-  return nodes.map((node: NodeClient) => ({
+const updateAllNode = (nodes: Array<Node>, update: Partial<Node>): Array<Node> => {
+  return nodes.map((node: Node) => ({
     ...node, ...update , childrens: updateAllNode(node.childrens, update)
   }))
 }
 
-const updateNode = (nodes: Array<NodeClient>, id: number, update: (node: NodeClient) => Partial<NodeClient>): Array<NodeClient> => {
-  return nodes.map((node: NodeClient) => {
+const updateNode = (nodes: Array<Node>, id: number, update: (node: Node) => Partial<Node>): Array<Node> => {
+  return nodes.map((node: Node) => {
     if (node.node_id === id) {
       return { ...node, ...update(node) }
     }
@@ -31,8 +37,8 @@ const updateNode = (nodes: Array<NodeClient>, id: number, update: (node: NodeCli
   })
 }
 
-const deleteNode = (nodes: Array<NodeClient>, id: number): Array<NodeClient> => {
-  return nodes.map((node: NodeClient) => {
+const deleteNode = (nodes: Array<Node>, id: number): Array<Node> => {
+  return nodes.map((node: Node) => {
     if (node.node_id === id) {
       return null
     }
@@ -45,12 +51,12 @@ const deleteNode = (nodes: Array<NodeClient>, id: number): Array<NodeClient> => 
   }).filter(n => n != null)
 }
 
-const addNode = (nodes: Array<NodeClient>, parentId: number | null, newNode: NodeClient): Array<NodeClient> => {
+const addNode = (nodes: Array<Node>, parentId: number | null, newNode: Node): Array<Node> => {
   if (!parentId) {
     return [ ...nodes, newNode ]
   }
 
-  return nodes.map((node: NodeClient) => {
+  return nodes.map((node: Node) => {
     if (node.node_id == parentId) {
       return { ...node, childrens: [...node.childrens, newNode] }
     }
@@ -64,11 +70,11 @@ const addNode = (nodes: Array<NodeClient>, parentId: number | null, newNode: Nod
 }
 
 interface Props {
-  nodes: Array<NodeClient>
+  nodes: Array<Node>
 }
 
 const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
-  const [features, setFeatures] = useState<NodeClient[]>(updateAllNode(nodes, { open: false }))
+  const [features, setFeatures] = useState<Node[]>(updateAllNode(nodes, { open: false }))
 
   const toggleOpen = (nodeId: number) => {
     setFeatures(updateNode(features, nodeId, (node) => ({
@@ -80,11 +86,11 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     setFeatures(deleteNode(features, nodeId))
   }
 
-  const handleEdit = (nodeId: number, newNode: Partial<NodeClient>) => {
+  const handleEdit = (nodeId: number, newNode: Partial<Node>) => {
     setFeatures(updateNode(features, nodeId, () => (newNode)))
   }
 
-  const handleAdd = (parent: number | null, newNode: NodeClient) => {
+  const handleAdd = (parent: number | null, newNode: Node) => {
     setFeatures(addNode(features, parent, newNode))
   }
 
@@ -93,7 +99,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
       {['Backlog', 'In Progress', 'In Review', 'Done'].map(status =>
         <div key={status}>
           <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
-          {features.filter(f => f.status === status).map((node: NodeClient) =>
+          {features.filter(f => f.status === status).map((node: Node) =>
             <NodeItem
               key={node.node_id}
               node={node}

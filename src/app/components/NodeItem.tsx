@@ -2,16 +2,16 @@
 
 import cn from 'classnames'
 import React from 'react'
-import { NodeClient } from './Tree'
+import { Node } from './Tree'
 import Badge from './Badge'
 import Button from './Button'
 
 interface Props {
-  node: NodeClient,
+  node: Node,
   level: number,
   onToggle: (nodeId: number) => void,
   onDelete: (nodeId: number) => void,
-  onEdit: (nodeId: number, node: Partial<NodeClient>) => void,
+  onEdit: (nodeId: number, node: Partial<Node>) => void,
 }
 
 const NodeItem: React.FC<Props> = ({ node, level, onToggle, onDelete, onEdit }: Props): JSX.Element => {
