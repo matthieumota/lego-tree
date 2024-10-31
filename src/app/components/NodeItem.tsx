@@ -9,9 +9,10 @@ interface Props {
   node: NodeClient,
   level: number,
   onToggle: (nodeId: number) => void,
+  onDelete: (nodeId: number) => void,
 }
 
-const NodeItem: React.FC<Props> = ({ node, onToggle, level }: Props): JSX.Element => {
+const NodeItem: React.FC<Props> = ({ node, level, onToggle, onDelete }: Props): JSX.Element => {
   return (
     <>
       <div className={cn(`border shadow rounded-lg mb-4`, {
@@ -19,13 +20,14 @@ const NodeItem: React.FC<Props> = ({ node, onToggle, level }: Props): JSX.Elemen
         'ml-8': level == 1,
         'ml-16': level == 2,
       })}>
-        <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex justify-between">
-          <div>
+        <div className="p-4 cursor-pointer flex justify-between">
+          <div onClick={() => onToggle(node.node_id)} className="flex-1">
             {node.open ? '-' : '+'}{' '}
             {node.name}{' '}
           </div>
           <div>
             <Badge status={node.status} />
+            <button onClick={() => onDelete(node.node_id)}>X</button>
           </div>
         </div>
 
@@ -40,7 +42,7 @@ const NodeItem: React.FC<Props> = ({ node, onToggle, level }: Props): JSX.Elemen
       {node.childrens.length > 0 && node.open &&
         <>
           {node.childrens.map((child) => (
-            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} />
+            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} />
           ))}
         </>
       }

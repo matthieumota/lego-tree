@@ -29,17 +29,32 @@ const updateNode = (nodes: Array<NodeClient>, id: number, update: (node: NodeCli
   })
 }
 
+const deleteNode = (nodes: Array<NodeClient>, id: number): Array<NodeClient> => {
+  return nodes.map((node: NodeClient) => {
+    if (node.node_id === id) {
+      return null
+    }
+
+    if (node.childrens) {
+      return { ...node, childrens: deleteNode(node.childrens, id) }
+    }
+
+    return node;
+  }).filter(n => n != null)
+}
+
 const SubTree: React.FC<{
-  nodes: Array<NodeClient>, onToggle: (nodeId: number) => void, title: string
-}> = ({ nodes, onToggle, title }): JSX.Element => (
+  nodes: Array<NodeClient>, title: string, onToggle: (nodeId: number) => void, onDelete: (nodeId: number) => void
+}> = ({ nodes, title, onToggle, onDelete }): JSX.Element => (
   <div>
-    <h2 className="mb-3">{title}</h2>
+    <h2 className="mb-3 text-center font-bold text-lg">{title}</h2>
     {nodes.map((node: NodeClient) =>
       <NodeItem
         key={node.node_id}
         node={node}
         level={0}
         onToggle={onToggle}
+        onDelete={onDelete}
       />
     )}
   </div>
@@ -58,11 +73,15 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     })))
   }
 
+  const handleDelete = (nodeId: number) => {
+    setFeatures(deleteNode(features, nodeId))
+  }
+
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {['Backlog', 'In Progress', 'In Review', 'Done'].map(status =>
         <div key={status}>
-          <SubTree nodes={features.filter(f => f.status === status)} onToggle={toggleOpen} title={status} />
+          <SubTree nodes={features.filter(f => f.status === status)} title={status} onToggle={toggleOpen} onDelete={handleDelete} />
         </div>
       )}
     </div>
