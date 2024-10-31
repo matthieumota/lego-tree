@@ -59,7 +59,7 @@ export async function GET(request: Request): Promise<Response> {
 
     const features = nodes.filter(n => n.type === 'Feature')
 
-    let total = 0;
+    let total = 0
     features.forEach(feature => {
       total += countChildrens(feature)
     })

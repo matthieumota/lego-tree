@@ -39,7 +39,7 @@ const deleteNode = (nodes: Array<NodeClient>, id: number): Array<NodeClient> => 
       return { ...node, childrens: deleteNode(node.childrens, id) }
     }
 
-    return node;
+    return node
   }).filter(n => n != null)
 }
 
