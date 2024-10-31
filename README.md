@@ -25,3 +25,9 @@ We need to implement functionalities on that test :
 ## Parse data
 
 Our first task is to parse data from csv source. We're going to parse data from server. We use stream to potentially read file with chunks for optimization (`createReadStream`). We use [csv-parser](https://www.npmjs.com/package/csv-parser) for that.
+
+## Display data
+
+We start from endpoint with nodes. At that point, we group result with features at first level. Next, we pass data to a component `Tree` who pass nodes to `Node` component recursively. We group features in four groups by status for visibility.
+
+We prepare abilities to manage nodes in a state. We can easily add fields on objects. We can already collapse / expand elements.

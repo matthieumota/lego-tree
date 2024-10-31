@@ -31,6 +31,16 @@ async function readCSV<T>(filename: string): Promise<T[]> {
   })
 }
 
+const countChildrens = (node: Node): number => {
+  let count = 1
+
+  node.childrens.forEach(child => {
+    count += countChildrens(child)
+  })
+
+  return count
+}
+
 export async function GET(request: Request): Promise<Response> {
   try {
     const nodes = await readCSV<Node>('nodes.csv')
@@ -38,7 +48,6 @@ export async function GET(request: Request): Promise<Response> {
 
     const nodeMap = new Map<number, Node>()
     nodes.forEach(node => nodeMap.set(node.node_id, node))
-
     relations.forEach(({ parent_id, child_id }) => {
       const parent = nodeMap.get(parent_id)
       const child = nodeMap.get(child_id)
@@ -47,8 +56,15 @@ export async function GET(request: Request): Promise<Response> {
         parent.childrens.push(child)
       }
     })
+
+    const features = nodes.filter(n => n.type === 'Feature')
+
+    let total = 0;
+    features.forEach(feature => {
+      total += countChildrens(feature)
+    })
   
-    return Response.json({ nodes })
+    return Response.json({ data: features, meta: { total } })
   } catch (error) {
     console.log(error)
     return Response.json({
