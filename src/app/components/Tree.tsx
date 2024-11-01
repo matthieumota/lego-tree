@@ -148,22 +148,8 @@ const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node, stat
   })
 }
 
-const moveNode = (nodes: Array<Node>, id: number, target: number | null, status: string | null): Array<Node> => {
-  const node = findNode(nodes, id)
-
-  if (!node) {
-    return nodes
-  } else if (target === null) {
-    return insertNode(deleteNode(nodes, id), null, node, status)
-  }
-
-  const targetNode = findNode(nodes, target)
-
-  if (!node || !targetNode) {
-    return nodes
-  }
-
-  return insertNode(deleteNode(nodes, id), targetNode, node, status)
+const moveNode = (nodes: Array<Node>, node: Node, target: Node | null, status: string | null): Array<Node> => {
+  return insertNode(deleteNode(nodes, node.node_id), target ? target : null, node, status)
 }
 
 interface Props {
@@ -172,7 +158,7 @@ interface Props {
 
 const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const [features, setFeatures] = useState<Node[]>(updateAllNode(nodes, { open: false }))
-  const dragged = useRef<number>(0)
+  const dragged = useRef<Node>()
 
   const toggleOpen = useCallback((nodeId: number) => {
     setFeatures(f => updateNode(f, nodeId, (node) => ({
@@ -188,13 +174,13 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     setFeatures(f => updateNode(f, nodeId, () => (newNode)))
   }, [])
 
-  const handleDragStart = useCallback((nodeId: number) => {
-    dragged.current = nodeId
+  const handleDragStart = useCallback((node: Node) => {
+    dragged.current = node
   }, [])
 
-  const handleDrop = useCallback((nodeId: number | null, status: string | null = null) => {
-    if (dragged.current !== 0 && dragged.current !== nodeId) {
-      setFeatures(f => moveNode(f, dragged.current, nodeId, status))
+  const handleDrop = useCallback((node: Node | null, status: string | null = null) => {
+    if (dragged.current && dragged.current.node_id !== node?.node_id) {
+      setFeatures(f => moveNode(f, dragged.current as Node, node, status))
     }
   }, [])
 

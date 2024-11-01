@@ -12,8 +12,8 @@ interface Props {
   onToggle: (nodeId: number) => void,
   onDelete: (nodeId: number) => void,
   onEdit: (nodeId: number, node: Partial<Node>) => void,
-  onDragStart: (nodeId: number) => void,
-  onDrop: (nodeId: number) => void,
+  onDragStart: (node: Node) => void,
+  onDrop: (node: Node) => void,
 }
 
 const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop }: Props): JSX.Element => {
@@ -27,8 +27,8 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         'ml-16': level == 2,
       })}
         draggable
-        onDragStart={() => onDragStart(node.node_id)}
-        onDrop={() => onDrop(node.node_id)}
+        onDragStart={() => onDragStart(node)}
+        onDrop={() => onDrop(node)}
         onDragOver={(e) => e.preventDefault()}
       >
         <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex justify-between">
