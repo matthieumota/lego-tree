@@ -2,6 +2,7 @@
 
 import React, { useCallback, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
+import Button from './Button'
 
 let nextId = 106
 
@@ -117,9 +118,8 @@ const findNode = (nodes: Array<Node>, id: number): Node | null => {
   return null
 }
 
-const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node, status: string | null): Array<Node> => {
+const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node): Array<Node> => {
   if (target === null) {
-    newNode.status = status ? status : newNode.status
     return [...nodes, newNode]
   }
 
@@ -127,9 +127,6 @@ const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node, stat
 
   if (index != -1) {
     const newNodes = [ ...nodes ]
-    if (newNode.type === 'Feature') {
-      newNode.status = target.status
-    }
     newNodes.splice(index, 0, newNode)
 
     return newNodes
@@ -137,7 +134,7 @@ const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node, stat
 
   return nodes.map((node: Node) => {
     if (node.childrens) {
-      const insertedChildrens = insertNode(node.childrens, target, newNode, status)
+      const insertedChildrens = insertNode(node.childrens, target, newNode)
 
       if (!nodesEqual(insertedChildrens, node.childrens)) {
         return { ...node, childrens: insertedChildrens }
@@ -148,8 +145,8 @@ const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node, stat
   })
 }
 
-const moveNode = (nodes: Array<Node>, node: Node, target: Node | null, status: string | null): Array<Node> => {
-  return insertNode(deleteNode(nodes, node.node_id), target ? target : null, node, status)
+const moveNode = (nodes: Array<Node>, node: Node, target: Node | null): Array<Node> => {
+  return insertNode(deleteNode(nodes, node.node_id), target ? target : null, node)
 }
 
 interface Props {
@@ -180,7 +177,10 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
 
   const handleDrop = useCallback((node: Node | null, status: string | null = null) => {
     if (dragged.current && dragged.current.node_id !== node?.node_id) {
-      setFeatures(f => moveNode(f, dragged.current as Node, node, status))
+      let sourceNode = dragged.current
+      sourceNode.status = node?.status || status || sourceNode.status
+
+      setFeatures(f => moveNode(f, sourceNode, node))
     }
   }, [])
 
@@ -217,7 +217,9 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
           </div>
         )}
       </div>
-      <button onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>Ajouter</button>
+      <Button onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
+        Ajouter
+      </Button>
     </>
   )
 }
