@@ -11,5 +11,5 @@ export default async function Home() {
         <Tree nodes={data} />
       </div>
     </div>
-  );
+  )
 }
