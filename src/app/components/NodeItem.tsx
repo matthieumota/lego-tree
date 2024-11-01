@@ -34,14 +34,14 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         'ml-8': level == 1,
         'ml-16': level == 2,
       })}>
-        <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex justify-between"
+        <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex items-center justify-between"
           draggable
           onDragStart={() => onDragStart(node)}
           onDrop={() => handleDrop(false)}
           onDragOver={(e) => e.preventDefault()}
         >
           <div>
-            {node.open ? '-' : '+'}{' '}
+            <span className="text-xl">{node.open ? '-' : '+'}{' '}</span>
             {node.name}{' '}
           </div>
           <div>

@@ -41,7 +41,7 @@ const countChildrens = (node: Node): number => {
   return count
 }
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(): Promise<Response> {
   try {
     const nodes = await readCSV<Node>('nodes.csv')
     const relations = await readCSV<Relationship>('relationships.csv')
@@ -65,8 +65,7 @@ export async function GET(request: Request): Promise<Response> {
     })
   
     return Response.json({ data: features, meta: { total } })
-  } catch (error) {
-    console.log(error)
+  } catch {
     return Response.json({
       status: 500,
       details: 'API not available',
