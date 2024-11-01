@@ -100,24 +100,6 @@ const addNode = (nodes: Array<Node>, parent: number | null, newNode: Node): Arra
   })
 }
 
-const findNode = (nodes: Array<Node>, id: number): Node | null => {
-  for (let node of nodes) {
-    if (node.node_id == id) {
-      return node
-    }
-
-    if (node.childrens) {
-      const found = findNode(node.childrens, id)
-
-      if (found) {
-        return found
-      }
-    }
-  }
-
-  return null
-}
-
 const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node): Array<Node> => {
   if (target === null) {
     return [...nodes, newNode]
