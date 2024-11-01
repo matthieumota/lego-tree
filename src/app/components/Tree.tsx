@@ -117,7 +117,12 @@ const findNode = (nodes: Array<Node>, id: number): Node | null => {
   return null
 }
 
-const insertNode = (nodes: Array<Node>, target: Node, newNode: Node): Array<Node> => {
+const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node, status: string | null): Array<Node> => {
+  if (target === null) {
+    newNode.status = status ? status : newNode.status
+    return [...nodes, newNode]
+  }
+
   const index = nodes.findIndex(node => node.node_id == target.node_id)
 
   if (index != -1) {
@@ -132,7 +137,7 @@ const insertNode = (nodes: Array<Node>, target: Node, newNode: Node): Array<Node
 
   return nodes.map((node: Node) => {
     if (node.childrens) {
-      const insertedChildrens = insertNode(node.childrens, target, newNode)
+      const insertedChildrens = insertNode(node.childrens, target, newNode, status)
 
       if (!nodesEqual(insertedChildrens, node.childrens)) {
         return { ...node, childrens: insertedChildrens }
@@ -143,15 +148,22 @@ const insertNode = (nodes: Array<Node>, target: Node, newNode: Node): Array<Node
   })
 }
 
-const moveNode = (nodes: Array<Node>, id: number, target: number): Array<Node> => {
+const moveNode = (nodes: Array<Node>, id: number, target: number | null, status: string | null): Array<Node> => {
   const node = findNode(nodes, id)
+
+  if (!node) {
+    return nodes
+  } else if (target === null) {
+    return insertNode(deleteNode(nodes, id), null, node, status)
+  }
+
   const targetNode = findNode(nodes, target)
 
   if (!node || !targetNode) {
     return nodes
   }
 
-  return insertNode(deleteNode(nodes, id), targetNode, node)
+  return insertNode(deleteNode(nodes, id), targetNode, node, status)
 }
 
 interface Props {
@@ -180,9 +192,9 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     dragged.current = nodeId
   }, [])
 
-  const handleDrop = useCallback((nodeId: number) => {
+  const handleDrop = useCallback((nodeId: number | null, status: string | null = null) => {
     if (dragged.current !== 0 && dragged.current !== nodeId) {
-      setFeatures(f => moveNode(f, dragged.current, nodeId))
+      setFeatures(f => moveNode(f, dragged.current, nodeId, status))
     }
   }, [])
 
@@ -191,26 +203,36 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   }
 
   return (
-    <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {['Backlog', 'In Progress', 'In Review', 'Done'].map(status =>
-        <div key={status}>
-          <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
-          {features.filter(f => f.status === status).map((node: Node) =>
-            <NodeItem
-              key={node.node_id}
-              node={node}
-              level={0}
-              onToggle={toggleOpen}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-              onDragStart={handleDragStart}
-              onDrop={handleDrop}
-            />
-          )}
-          <button onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status, open: true })}>Ajouter</button>
-        </div>
-      )}
-    </div>
+    <>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {['Backlog', 'In Progress', 'In Review', 'Done'].map(status =>
+          <div key={status}
+            onDrop={(e) => {
+              e.preventDefault()
+              if (features.filter(f => f.status === status).length === 0) {
+                handleDrop(null, status)
+              }
+            }}
+            onDragOver={(e) => e.preventDefault()}
+          >
+            <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
+            {features.filter(f => f.status === status).map((node: Node) =>
+              <NodeItem
+                key={node.node_id}
+                node={node}
+                level={0}
+                onToggle={toggleOpen}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                onDragStart={handleDragStart}
+                onDrop={handleDrop}
+              />
+            )}
+          </div>
+        )}
+      </div>
+      <button onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>Ajouter</button>
+    </>
   )
 }
 
