@@ -58,7 +58,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
 
             <div className="text-center flex gap-4 justify-center">
               <Button onClick={() => onEdit(node.node_id, { name: 'test' })}>Modifier</Button>
-              <Button className="bg-red-400" onClick={() => onDelete(node.node_id)}>X</Button>
+              <Button className="bg-red-600 hover:!bg-red-500 text-white" onClick={() => onDelete(node)}>Supprimer</Button>
             </div>
           </div>
         }

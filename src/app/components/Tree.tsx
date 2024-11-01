@@ -231,7 +231,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
       status,
       nodes: features.filter(f => f.status === status),
     }))
-  ), [features]);
+  ), [features])
 
   return (
     <>
