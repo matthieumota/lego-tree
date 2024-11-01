@@ -61,7 +61,7 @@ const updateNode = (nodes: Array<Node>, id: number, update: (node: Node) => Part
 
 const deleteNode = (nodes: Array<Node>, id: number): Array<Node> => {
   return nodes.map((node: Node) => {
-    if (node.node_id === id) {
+    if (node.node_id == id) {
       return null
     }
 
@@ -77,18 +77,18 @@ const deleteNode = (nodes: Array<Node>, id: number): Array<Node> => {
   }).filter(n => n != null)
 }
 
-const addNode = (nodes: Array<Node>, parentId: number | null, newNode: Node): Array<Node> => {
-  if (!parentId) {
+const addNode = (nodes: Array<Node>, parent: number | null, newNode: Node): Array<Node> => {
+  if (!parent) {
     return [ ...nodes, newNode ]
   }
 
   return nodes.map((node: Node) => {
-    if (node.node_id == parentId) {
+    if (node.node_id == parent) {
       return { ...node, childrens: [...node.childrens, newNode] }
     }
 
     if (node.childrens) {
-      const addedChildrens = addNode(node.childrens, parentId, newNode)
+      const addedChildrens = addNode(node.childrens, parent, newNode)
 
       if (!nodesEqual(addedChildrens, node.childrens)) {
         return { ...node, childrens: addedChildrens }
@@ -97,6 +97,34 @@ const addNode = (nodes: Array<Node>, parentId: number | null, newNode: Node): Ar
 
     return node
   })
+}
+
+const findNode = (nodes: Array<Node>, id: number): Node | null => {
+  for (let node of nodes) {
+    if (node.node_id == id) {
+      return node
+    }
+
+    if (node.childrens) {
+      const found = findNode(node.childrens, id)
+
+      if (found) {
+        return found
+      }
+    }
+  }
+
+  return null
+};
+
+const moveNode = (nodes: Array<Node>, id: number, parent: number | null): Array<Node> => {
+  const node = findNode(nodes, id)
+
+  if (!node) {
+    return nodes
+  }
+
+  return addNode(deleteNode(nodes, id), parent, node)
 }
 
 interface Props {
@@ -124,6 +152,10 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     setFeatures(addNode(features, parent, newNode))
   }
 
+  const handleMove = (nodeId: number, parent: number | null) => {
+    setFeatures(moveNode(features, nodeId, parent))
+  }
+
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {['Backlog', 'In Progress', 'In Review', 'Done'].map(status =>
@@ -140,6 +172,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
             />
           )}
           <button onClick={() => handleAdd(45, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status, open: true })}>Ajouter</button>
+          <button onClick={() => handleMove(20, 4)}>Déplacer</button>
         </div>
       )}
     </div>
