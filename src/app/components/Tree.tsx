@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
 
 let nextId = 106
@@ -32,7 +32,7 @@ const nodesEqual = (a: Array<Node>, b: Array<Node>): boolean => {
     }
   }
 
-  return true;
+  return true
 }
 
 const updateAllNode = (nodes: Array<Node>, update: Partial<Node>): Array<Node> => {
@@ -115,7 +115,7 @@ const findNode = (nodes: Array<Node>, id: number): Node | null => {
   }
 
   return null
-};
+}
 
 const moveNode = (nodes: Array<Node>, id: number, parent: number | null): Array<Node> => {
   const node = findNode(nodes, id)
@@ -133,6 +133,7 @@ interface Props {
 
 const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const [features, setFeatures] = useState<Node[]>(updateAllNode(nodes, { open: false }))
+  const dragged = useRef<number>(0)
 
   const toggleOpen = useCallback((nodeId: number) => {
     setFeatures(f => updateNode(f, nodeId, (node) => ({
@@ -146,6 +147,16 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
 
   const handleEdit = useCallback((nodeId: number, newNode: Partial<Node>) => {
     setFeatures(f => updateNode(f, nodeId, () => (newNode)))
+  }, [])
+
+  const handleDragStart = useCallback((nodeId: number) => {
+    dragged.current = nodeId
+  }, [])
+
+  const handleDrop = useCallback((nodeId: number) => {
+    if (dragged.current !== 0 && dragged.current !== nodeId) {
+      setFeatures(f => moveNode(f, dragged.current, nodeId))
+    }
   }, [])
 
   const handleAdd = (parent: number | null, newNode: Node) => {
@@ -169,10 +180,11 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
               onToggle={toggleOpen}
               onDelete={handleDelete}
               onEdit={handleEdit}
+              onDragStart={handleDragStart}
+              onDrop={handleDrop}
             />
           )}
           <button onClick={() => handleAdd(45, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status, open: true })}>Ajouter</button>
-          <button onClick={() => handleMove(20, 4)}>Déplacer</button>
         </div>
       )}
     </div>

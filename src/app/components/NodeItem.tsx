@@ -12,9 +12,11 @@ interface Props {
   onToggle: (nodeId: number) => void,
   onDelete: (nodeId: number) => void,
   onEdit: (nodeId: number, node: Partial<Node>) => void,
+  onDragStart: (nodeId: number) => void,
+  onDrop: (nodeId: number) => void,
 }
 
-const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit }: Props): JSX.Element => {
+const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
 
   return (
@@ -23,7 +25,12 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         'ml-0': level == 0,
         'ml-8': level == 1,
         'ml-16': level == 2,
-      })}>
+      })}
+        draggable
+        onDragStart={() => onDragStart(node.node_id)}
+        onDrop={() => onDrop(node.node_id)}
+        onDragOver={(e) => e.preventDefault()}
+      >
         <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex justify-between">
           <div>
             {node.open ? '-' : '+'}{' '}
@@ -52,7 +59,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
       {node.childrens.length > 0 && node.open &&
         <>
           {node.childrens.map((child) => (
-            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} />
+            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} />
           ))}
         </>
       }
