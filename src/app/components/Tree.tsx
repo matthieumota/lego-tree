@@ -145,7 +145,11 @@ const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node): Arr
   })
 }
 
-const moveNode = (nodes: Array<Node>, node: Node, target: Node | null): Array<Node> => {
+const moveNode = (nodes: Array<Node>, node: Node, target: Node | null, asParent: boolean = false): Array<Node> => {
+  if (asParent) {
+    return addNode(deleteNode(nodes, node.node_id), target ? target.node_id : null, node)
+  }
+
   return insertNode(deleteNode(nodes, node.node_id), target ? target : null, node)
 }
 
@@ -175,12 +179,12 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     dragged.current = node
   }, [])
 
-  const handleDrop = useCallback((node: Node | null, status: string | null = null) => {
+  const handleDrop = useCallback((node: Node | null, asParent: boolean = false, status: string | null = null) => {
     if (dragged.current && dragged.current.node_id !== node?.node_id) {
       let sourceNode = dragged.current
       sourceNode.status = node?.status || status || sourceNode.status
 
-      setFeatures(f => moveNode(f, sourceNode, node))
+      setFeatures(f => moveNode(f, sourceNode, node, asParent))
     }
   }, [])
 
@@ -196,7 +200,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
             onDrop={(e) => {
               e.preventDefault()
               if (features.filter(f => f.status === status).length === 0) {
-                handleDrop(null, status)
+                handleDrop(null, false, status)
               }
             }}
             onDragOver={(e) => e.preventDefault()}

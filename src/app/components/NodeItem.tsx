@@ -13,7 +13,7 @@ interface Props {
   onDelete: (nodeId: number) => void,
   onEdit: (nodeId: number, node: Partial<Node>) => void,
   onDragStart: (node: Node) => void,
-  onDrop: (node: Node) => void,
+  onDrop: (node: Node, asParent: boolean) => void,
 }
 
 const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop }: Props): JSX.Element => {
@@ -25,13 +25,13 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         'ml-0': level == 0,
         'ml-8': level == 1,
         'ml-16': level == 2,
-      })}
-        draggable
-        onDragStart={() => onDragStart(node)}
-        onDrop={() => onDrop(node)}
-        onDragOver={(e) => e.preventDefault()}
-      >
-        <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex justify-between">
+      })}>
+        <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex justify-between"
+          draggable
+          onDragStart={() => onDragStart(node)}
+          onDrop={() => onDrop(node, false)}
+          onDragOver={(e) => e.preventDefault()}
+        >
           <div>
             {node.open ? '-' : '+'}{' '}
             {node.name}{' '}
@@ -42,7 +42,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         </div>
 
         {node.open &&
-          <div className="p-4">
+          <div className="p-4" onDrop={() => onDrop(node, true)} onDragOver={(e) => e.preventDefault()}>
             <div className="mb-4">
               <p className="text-gray-500 text-center">{node.description}</p>
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>
