@@ -142,7 +142,31 @@ const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node, isAb
   })
 }
 
+const isChild = (nodes: Array<Node>, target: Node | null): boolean => {
+  if (!target) {
+    return false
+  }
+
+  for (const node of nodes) {
+    if (node.node_id === target.node_id) {
+      return true
+    }
+
+    if (node.childrens) {
+      if (isChild(node.childrens, target)) {
+        return true
+      }
+    }
+  }
+
+  return false
+}
+
 const moveNode = (nodes: Array<Node>, node: Node, target: Node | null, asParent: boolean = false, isAbove: boolean = false): Array<Node> => {
+  if (isChild(node.childrens, target)) {
+    return nodes
+  }
+
   if (asParent) {
     return addNode(deleteNode(nodes, node.node_id), target ? target.node_id : null, node)
   }
@@ -209,7 +233,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
           <div key={status}
             onDrop={(e) => {
               e.preventDefault()
-              if (features.filter(f => f.status === status).length === 0) {
+              if (dragged.current?.status !== status && dragged.current?.type === 'Feature') {
                 handleDrop(null, false, status)
               }
             }}
