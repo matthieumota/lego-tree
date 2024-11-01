@@ -10,7 +10,7 @@ interface Props {
   node: Node,
   level: number,
   onToggle: (nodeId: number) => void,
-  onDelete: (nodeId: number) => void,
+  onDelete: (node: Node) => void,
   onEdit: (nodeId: number, node: Partial<Node>) => void,
   onDragStart: (node: Node) => void,
   onDrop: (node: Node, asParent: boolean) => void,

@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
 import Button from './Button'
+import DeleteModal from './DeleteModal'
 
 let nextId = 106
 
@@ -181,6 +182,7 @@ interface Props {
 const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const [features, setFeatures] = useState<Node[]>(updateAllNode(nodes, { open: false }))
   const dragged = useRef<Node>()
+  const [nodeToBeDeleted, setNodeToBeDeleted] = useState<Node | null>(null)
 
   const toggleOpen = useCallback((nodeId: number) => {
     setFeatures(f => updateNode(f, nodeId, (node) => ({
@@ -188,8 +190,8 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     })))
   }, [])
 
-  const handleDelete = useCallback((nodeId: number) => {
-    setFeatures(f => deleteNode(f, nodeId))
+  const handleDelete = useCallback((node: Node) => {
+    setNodeToBeDeleted(node)
   }, [])
 
   const handleEdit = useCallback((nodeId: number, newNode: Partial<Node>) => {
@@ -233,6 +235,13 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     }))
   ), [features])
 
+  const confirmDelete = () => {
+    if (nodeToBeDeleted) {
+      setFeatures(f => deleteNode(f, nodeToBeDeleted.node_id))
+      setNodeToBeDeleted(null)
+    }
+  }
+
   return (
     <>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -262,6 +271,9 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
           </div>
         )}
       </div>
+
+      <DeleteModal node={nodeToBeDeleted} onClose={() => setNodeToBeDeleted(null)} onConfirm={confirmDelete} />
+
       <Button onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
         Ajouter
       </Button>
