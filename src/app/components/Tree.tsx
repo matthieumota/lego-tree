@@ -117,14 +117,41 @@ const findNode = (nodes: Array<Node>, id: number): Node | null => {
   return null
 }
 
-const moveNode = (nodes: Array<Node>, id: number, parent: number | null): Array<Node> => {
-  const node = findNode(nodes, id)
+const insertNode = (nodes: Array<Node>, target: Node, newNode: Node): Array<Node> => {
+  const index = nodes.findIndex(node => node.node_id == target.node_id)
 
-  if (!node) {
+  if (index != -1) {
+    const newNodes = [ ...nodes ]
+    if (newNode.type === 'Feature') {
+      newNode.status = target.status
+    }
+    newNodes.splice(index, 0, newNode)
+
+    return newNodes
+  }
+
+  return nodes.map((node: Node) => {
+    if (node.childrens) {
+      const insertedChildrens = insertNode(node.childrens, target, newNode)
+
+      if (!nodesEqual(insertedChildrens, node.childrens)) {
+        return { ...node, childrens: insertedChildrens }
+      }
+    }
+
+    return node
+  })
+}
+
+const moveNode = (nodes: Array<Node>, id: number, target: number): Array<Node> => {
+  const node = findNode(nodes, id)
+  const targetNode = findNode(nodes, target)
+
+  if (!node || !targetNode) {
     return nodes
   }
 
-  return addNode(deleteNode(nodes, id), parent, node)
+  return insertNode(deleteNode(nodes, id), targetNode, node)
 }
 
 interface Props {
@@ -163,10 +190,6 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     setFeatures(addNode(features, parent, newNode))
   }
 
-  const handleMove = (nodeId: number, parent: number | null) => {
-    setFeatures(moveNode(features, nodeId, parent))
-  }
-
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {['Backlog', 'In Progress', 'In Review', 'Done'].map(status =>
@@ -184,7 +207,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
               onDrop={handleDrop}
             />
           )}
-          <button onClick={() => handleAdd(45, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status, open: true })}>Ajouter</button>
+          <button onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status, open: true })}>Ajouter</button>
         </div>
       )}
     </div>

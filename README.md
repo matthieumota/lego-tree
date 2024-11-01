@@ -31,3 +31,7 @@ Our first task is to parse data from csv source. We're going to parse data from 
 We start from endpoint with nodes. At that point, we group result with features at first level. Next, we pass data to a component `Tree` who pass nodes to `Node` component recursively. We group features in four groups by status for visibility.
 
 We prepare abilities to manage nodes in a state. We can easily add fields on objects. We can already collapse / expand elements.
+
+## Node interactions
+
+To rearrange the node, we think drag n drop is a good solution. If we move feature, we change status. If we move user story or task, we change parent.
