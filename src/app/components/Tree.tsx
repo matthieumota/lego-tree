@@ -100,7 +100,22 @@ const addNode = (nodes: Array<Node>, parent: number | null, newNode: Node): Arra
   })
 }
 
-const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node): Array<Node> => {
+const findNodeIndex = (nodes: Array<Node>, id: number): number => {
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].node_id === id) {
+      return i
+    }
+
+    const childIndex = findNodeIndex(nodes[i].childrens, id)
+    if (childIndex !== -1) {
+      return childIndex
+    }
+  }
+
+  return -1
+}
+
+const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node, isAbove: boolean = false): Array<Node> => {
   if (target === null) {
     return [...nodes, newNode]
   }
@@ -109,14 +124,14 @@ const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node): Arr
 
   if (index != -1) {
     const newNodes = [ ...nodes ]
-    newNodes.splice(index, 0, newNode)
+    newNodes.splice(isAbove ? index : index + 1, 0, newNode)
 
     return newNodes
   }
 
   return nodes.map((node: Node) => {
     if (node.childrens) {
-      const insertedChildrens = insertNode(node.childrens, target, newNode)
+      const insertedChildrens = insertNode(node.childrens, target, newNode, isAbove)
 
       if (!nodesEqual(insertedChildrens, node.childrens)) {
         return { ...node, childrens: insertedChildrens }
@@ -127,12 +142,12 @@ const insertNode = (nodes: Array<Node>, target: Node | null, newNode: Node): Arr
   })
 }
 
-const moveNode = (nodes: Array<Node>, node: Node, target: Node | null, asParent: boolean = false): Array<Node> => {
+const moveNode = (nodes: Array<Node>, node: Node, target: Node | null, asParent: boolean = false, isAbove: boolean = false): Array<Node> => {
   if (asParent) {
     return addNode(deleteNode(nodes, node.node_id), target ? target.node_id : null, node)
   }
 
-  return insertNode(deleteNode(nodes, node.node_id), target ? target : null, node)
+  return insertNode(deleteNode(nodes, node.node_id), target ? target : null, node, isAbove)
 }
 
 interface Props {
@@ -166,7 +181,20 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
       let sourceNode = dragged.current
       sourceNode.status = node?.status || status || sourceNode.status
 
-      setFeatures(f => moveNode(f, sourceNode, node, asParent))
+      setFeatures(f => {
+        let isAbove = true
+
+        if (node) {
+          const sourceIndex = findNodeIndex(f, sourceNode.node_id)
+          const nodeIndex = findNodeIndex(f, node.node_id)
+
+          if (sourceIndex < nodeIndex) {
+            isAbove = false
+          }
+        }
+
+        return moveNode(f, sourceNode, node, asParent, isAbove)
+      })
     }
   }, [])
 
