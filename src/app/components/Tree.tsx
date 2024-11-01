@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
 import Button from './Button'
 
@@ -226,10 +226,17 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     setFeatures(addNode(features, parent, newNode))
   }
 
+  const filteredNodes = useMemo(() => (
+    ['Backlog', 'In Progress', 'In Review', 'Done'].map(status => ({
+      status,
+      nodes: features.filter(f => f.status === status),
+    }))
+  ), [features]);
+
   return (
     <>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {['Backlog', 'In Progress', 'In Review', 'Done'].map(status =>
+        {filteredNodes.map(({ status, nodes }) =>
           <div key={status}
             onDrop={(e) => {
               e.preventDefault()
@@ -240,7 +247,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
             onDragOver={(e) => e.preventDefault()}
           >
             <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
-            {features.filter(f => f.status === status).map((node: Node) =>
+            {nodes.map((node: Node) =>
               <NodeItem
                 key={node.node_id}
                 node={node}
