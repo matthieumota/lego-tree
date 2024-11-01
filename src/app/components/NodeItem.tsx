@@ -19,6 +19,14 @@ interface Props {
 const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
 
+  const handleDrop = (asParent: boolean) => {
+    if (level === 2 && asParent) {
+      return
+    }
+
+    onDrop(node, asParent)
+  }
+
   return (
     <>
       <div className={cn(`border shadow rounded-lg mb-4`, {
@@ -29,7 +37,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex justify-between"
           draggable
           onDragStart={() => onDragStart(node)}
-          onDrop={() => onDrop(node, false)}
+          onDrop={() => handleDrop(false)}
           onDragOver={(e) => e.preventDefault()}
         >
           <div>
@@ -42,7 +50,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         </div>
 
         {node.open &&
-          <div className="p-4" onDrop={() => onDrop(node, true)} onDragOver={(e) => e.preventDefault()}>
+          <div className="p-4" onDrop={() => handleDrop(true)} onDragOver={(e) => e.preventDefault()}>
             <div className="mb-4">
               <p className="text-gray-500 text-center">{node.description}</p>
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>

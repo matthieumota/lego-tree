@@ -7,6 +7,7 @@ This project is a technical test. We start with create a Next JS project.
 You can run development server:
 
 ```bash
+npm install
 npm run dev
 ```
 
@@ -35,3 +36,15 @@ We prepare abilities to manage nodes in a state. We can easily add fields on obj
 ## Node interactions
 
 To rearrange the node, we think drag n drop is a good solution. If we move feature, we change status. If we move user story or task, we change parent.
+
+## Simple CRUD
+
+We can add / edit / delete a node directly on interface. We use `@headless/ui` to manage transitions / modals...
+
+## Metadata
+
+Already done.
+
+## Optimizations
+
+We apply memoization to optimize render of `NodeItem`.
