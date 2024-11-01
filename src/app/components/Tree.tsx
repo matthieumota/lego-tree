@@ -43,21 +43,19 @@ const updateAllNode = (nodes: Array<Node>, update: Partial<Node>): Array<Node> =
   }))
 }
 
-const updateNode = (nodes: Array<Node>, id: number, update: (node: Node) => Partial<Node>): Array<Node> => {
+const updateNode = (nodes: Array<Node>, ids: Array<number>, update: (node: Node) => Partial<Node>): Array<Node> => {
   return nodes.map((node: Node) => {
-    if (node.node_id === id) {
-      return { ...node, ...update(node) }
-    }
+    const updatedNode = (ids.includes(node.node_id)) ? { ...node, ...update(node) } : node
 
-    if (node.childrens) {
-      const updatedChildrens = updateNode(node.childrens, id, update)
+    if (updatedNode.childrens) {
+      const updatedChildrens = updateNode(node.childrens, ids, update)
 
       if (!nodesEqual(updatedChildrens, node.childrens)) {
-        return { ...node, childrens: updatedChildrens }
+        return { ...updatedNode, childrens: updatedChildrens }
       }
     }
 
-    return node
+    return updatedNode
   })
 }
 
@@ -182,10 +180,11 @@ interface Props {
 const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const [features, setFeatures] = useState<Node[]>(updateAllNode(nodes, { open: false }))
   const dragged = useRef<Node>()
+  const [nodeToBeEdited, setNodeToBeEdited] = useState<Node | null>(null)
   const [nodeToBeDeleted, setNodeToBeDeleted] = useState<Node | null>(null)
 
   const toggleOpen = useCallback((nodeId: number) => {
-    setFeatures(f => updateNode(f, nodeId, (node) => ({
+    setFeatures(f => updateNode(f, [nodeId], (node) => ({
       open: !node.open,
     })))
   }, [])
@@ -194,8 +193,8 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     setNodeToBeDeleted(node)
   }, [])
 
-  const handleEdit = useCallback((nodeId: number, newNode: Partial<Node>) => {
-    setFeatures(f => updateNode(f, nodeId, () => (newNode)))
+  const handleEdit = useCallback((node: Node) => {
+    setNodeToBeEdited(node)
   }, [])
 
   const handleDragStart = useCallback((node: Node) => {
@@ -235,6 +234,17 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     }))
   ), [features])
 
+  const confirmEdit = (newNode: Partial<Node>) => {
+    if (nodeToBeEdited) {
+      setFeatures(f => updateNode(f, [nodeToBeEdited.node_id], () => (newNode)))
+      setNodeToBeEdited(null)
+    }
+  }
+
+  const cancelEdit = () => {
+    setNodeToBeEdited(null)
+  }
+
   const confirmDelete = () => {
     if (nodeToBeDeleted) {
       setFeatures(f => deleteNode(f, nodeToBeDeleted.node_id))
@@ -272,7 +282,8 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
         )}
       </div>
 
-      <DeleteModal node={nodeToBeDeleted} onClose={() => setNodeToBeDeleted(null)} onConfirm={confirmDelete} />
+      {nodeToBeEdited && <NodeModal node={nodeToBeEdited} onClose={cancelEdit} onConfirm={confirmEdit} />}
+      {nodeToBeDeleted && <DeleteModal node={nodeToBeDeleted} onClose={() => setNodeToBeDeleted(null)} onConfirm={confirmDelete} />}
 
       <Button onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
         Ajouter

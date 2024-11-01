@@ -2,7 +2,7 @@ import cn from 'classnames'
 import React, { MouseEvent } from 'react'
 
 interface Props {
-  onClick: (event: MouseEvent) => void,
+  onClick?: (event: MouseEvent) => void,
   children: React.ReactNode,
   className?: string
 }

@@ -11,7 +11,7 @@ interface Props {
   level: number,
   onToggle: (nodeId: number) => void,
   onDelete: (node: Node) => void,
-  onEdit: (nodeId: number, node: Partial<Node>) => void,
+  onEdit: (node: Node) => void,
   onDragStart: (node: Node) => void,
   onDrop: (node: Node, asParent: boolean) => void,
 }
@@ -57,7 +57,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
             </div>
 
             <div className="text-center flex gap-4 justify-center">
-              <Button onClick={() => onEdit(node.node_id, { name: 'test' })}>Modifier</Button>
+              <Button onClick={() => onEdit(node)}>Modifier</Button>
               <Button className="bg-red-600 hover:!bg-red-500 text-white" onClick={() => onDelete(node)}>Supprimer</Button>
             </div>
           </div>
