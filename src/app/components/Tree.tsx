@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
 import Button from './Button'
 import DeleteModal from './DeleteModal'
+import NodeModal from './NodeModal'
 
 let nextId = 106
 
@@ -25,7 +26,13 @@ const nodesEqual = (a: Array<Node>, b: Array<Node>): boolean => {
   }
 
   for (let i = 0; i < a.length; i++) {
-    if (a[i].open !== b[i].open || a[i].name !== b[i].name) {
+    if (a[i].name !== b[i].name ||
+        a[i].type !== b[i].type ||
+        a[i].status !== b[i].status ||
+        a[i].description !== b[i].description ||
+        a[i].start_date !== b[i].start_date ||
+        a[i].end_date !== b[i].end_date ||
+        a[i].open !== b[i].open) {
       return false
     }
 

@@ -9,7 +9,7 @@ interface Props {
 
 const Button: React.FC<Props> = ({ onClick, children, className }: Props): JSX.Element => {
   return (
-    <button className={cn(`px-6 py-2 rounded-lg shadow hover:bg-gray-50 duration-300`, className)} onClick={onClick}>
+    <button className={cn(`px-6 py-2 rounded-lg shadow bg-gray-100 hover:bg-gray-50 duration-300`, className)} onClick={onClick}>
       {children}
     </button>
   )

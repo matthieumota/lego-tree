@@ -33,6 +33,9 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         'ml-0': level == 0,
         'ml-8': level == 1,
         'ml-16': level == 2,
+        'bg-slate-50': node.type === 'Feature',
+        'bg-green-50': node.type === 'User Story',
+        'bg-blue-50': node.type === 'Task',
       })}>
         <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex items-center justify-between"
           draggable
@@ -52,13 +55,14 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         {node.open &&
           <div className="p-4" onDrop={() => handleDrop(true)} onDragOver={(e) => e.preventDefault()}>
             <div className="mb-4">
+            <p className="text-gray-500 text-center">{node.type}</p>
               <p className="text-gray-500 text-center">{node.description}</p>
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>
             </div>
 
             <div className="text-center flex gap-4 justify-center">
               <Button onClick={() => onEdit(node)}>Modifier</Button>
-              <Button className="bg-red-600 hover:!bg-red-500 text-white" onClick={() => onDelete(node)}>Supprimer</Button>
+              <Button className="!bg-red-600 hover:!bg-red-500 text-white" onClick={() => onDelete(node)}>Supprimer</Button>
             </div>
           </div>
         }
