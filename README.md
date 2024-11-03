@@ -48,3 +48,5 @@ Already done.
 ## Optimizations
 
 We apply memoization to optimize render of `NodeItem`.
+
+- Implement virtualization with tanstack virtual

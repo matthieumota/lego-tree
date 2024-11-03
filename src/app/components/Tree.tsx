@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
 import Button from './Button'
 import DeleteModal from './DeleteModal'
 import NodeModal from './NodeModal'
+import { useVirtualizer, VirtualItem } from '@tanstack/react-virtual'
 
 let nextId = 106
 
@@ -186,6 +187,7 @@ interface Props {
 
 const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const [features, setFeatures] = useState<Node[]>(updateAllNode(nodes, { open: false }))
+  const parentRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const dragged = useRef<Node>()
   const [nodeToBeEdited, setNodeToBeEdited] = useState<Node | null>(null)
   const [nodeToBeDeleted, setNodeToBeDeleted] = useState<Node | null>(null)
@@ -259,34 +261,93 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     }
   }
 
+  const estimateSize = (node: Node) => {
+    const baseSize = node.open ? 230 : 80
+    let totalSize = baseSize
+
+    if (node.open) {
+      totalSize += node.childrens.reduce((t, n) => t + estimateSize(n), 0)
+    }
+
+    return totalSize
+  }
+
+  interface VirtualizerRef {
+    getVirtualItems: () => VirtualItem[]
+    measureElement: (element: HTMLElement) => void
+    getTotalSize: () => number
+    measure: () => void
+  }
+
+  const virtualizers = useRef<Record<string, VirtualizerRef>>({})
+
+  filteredNodes.forEach(({ status, nodes }) => {
+    virtualizers.current[status] = useVirtualizer({
+      count: nodes.length,
+      getScrollElement: () => parentRefs.current[status],
+      estimateSize: (index) => estimateSize(nodes[index]),
+    })
+  })
+
+  useEffect(() => {
+    Object.keys(virtualizers.current).forEach(status => {
+      virtualizers.current[status].measure()
+    })
+  }, [filteredNodes])
+
   return (
     <>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredNodes.map(({ status, nodes }) =>
-          <div key={status}
-            onDrop={(e) => {
-              e.preventDefault()
-              if (dragged.current?.status !== status && dragged.current?.type === 'Feature') {
-                handleDrop(null, false, status)
-              }
-            }}
-            onDragOver={(e) => e.preventDefault()}
-          >
-            <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
-            {nodes.map((node: Node) =>
-              <NodeItem
-                key={node.node_id}
-                node={node}
-                level={0}
-                onToggle={toggleOpen}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-                onDragStart={handleDragStart}
-                onDrop={handleDrop}
-              />
-            )}
-          </div>
-        )}
+        {filteredNodes.map(({ status, nodes }) => {
+          return (
+            <div key={status}
+              onDrop={(e) => {
+                e.preventDefault()
+                if (dragged.current?.status !== status && dragged.current?.type === 'Feature') {
+                  handleDrop(null, false, status)
+                }
+              }}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
+              <div ref={(el) => parentRefs.current[status] = el} style={{ height: 550, overflow: 'auto' }}>
+                <div style={{
+                  height: `${virtualizers.current[status].getTotalSize()}px`,
+                  position: 'relative',
+                }}>
+                  {virtualizers.current[status].getVirtualItems().map((virtualItem: VirtualItem) => {
+                    const node = nodes[virtualItem.index]
+
+                    return (
+                      <div
+                        key={virtualItem.key}
+                        ref={virtualizers.current[status].measureElement}
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: `${virtualItem.size}px`,
+                          transform: `translateY(${virtualItem.start}px)`,
+                        }}
+                      >
+                        <NodeItem
+                          node={node}
+                          level={0}
+                          onToggle={toggleOpen}
+                          onDelete={handleDelete}
+                          onEdit={handleEdit}
+                          onDragStart={handleDragStart}
+                          onDrop={handleDrop}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {nodeToBeEdited && <NodeModal node={nodeToBeEdited} onClose={cancelEdit} onConfirm={confirmEdit} />}
