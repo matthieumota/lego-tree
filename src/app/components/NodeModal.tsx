@@ -13,13 +13,17 @@ const NodeModal: React.FC<Props> = ({ node, onClose, onConfirm }: Props): JSX.El
   const [newNode, setNewNode] = useState<Node | null>(node)
   const [errors, setErrors] = useState<Record<string, string> | null>(null)
 
+  const valid = useMemo(() => errors === null || Object.keys(errors).length === 0, [errors])
+
+  useEffect(() => {
+    if (newNode) {
+      setErrors(validate(newNode))
+    }
+  }, [newNode])
+
   if (!newNode) {
     return null
   }
-
-  useEffect(() => {
-    setErrors(validate(newNode))
-  }, [newNode])
 
   const validate = (n: Node): Record<string, string> | null => {
     const errors = {} as Record<string, string>
@@ -53,8 +57,6 @@ const NodeModal: React.FC<Props> = ({ node, onClose, onConfirm }: Props): JSX.El
 
     return errors
   }
-
-  const valid = useMemo(() => errors === null || Object.keys(errors).length === 0, [errors])
 
   const handleChange = (e: ChangeEvent, name: string) => {
     setNewNode({ ...newNode, [name]: (e.target as HTMLInputElement).value })

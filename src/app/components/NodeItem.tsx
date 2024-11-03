@@ -79,4 +79,6 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
   )
 })
 
+NodeItem.displayName = 'NodeItem'
+
 export default NodeItem

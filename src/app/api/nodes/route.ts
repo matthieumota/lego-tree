@@ -43,7 +43,8 @@ const countChildrens = (node: Node): number => {
 
 export async function GET(): Promise<Response> {
   try {
-    let nodes = await readCSV<Node>('nodes.csv')
+    const nodes = await readCSV<Node>('nodes.csv')
+    // let nodes = await readCSV<Node>('nodes.csv')
     const relations = await readCSV<Relationship>('relationships.csv')
 
     const nodeMap = new Map<number, Node>()
