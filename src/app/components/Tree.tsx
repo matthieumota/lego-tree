@@ -213,7 +213,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const handleDrop = useCallback((node: Node | null, asParent: boolean = false, status: string | null = null) => {
     if (dragged.current && dragged.current.node_id !== node?.node_id) {
       const sourceNode = dragged.current
-      sourceNode.status = node?.status || status || sourceNode.status
+      sourceNode.status = (asParent) ? node?.status || sourceNode.status : status || sourceNode.status
 
       setFeatures(f => {
         let isAbove = true
@@ -345,6 +345,12 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
                   })}
                 </div>
               </div>
+
+              {status === 'Backlog' &&
+                <Button className="block w-full" onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
+                  Ajouter
+                </Button>
+              }
             </div>
           )
         })}
@@ -352,10 +358,6 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
 
       {nodeToBeEdited && <NodeModal node={nodeToBeEdited} onClose={cancelEdit} onConfirm={confirmEdit} />}
       {nodeToBeDeleted && <DeleteModal node={nodeToBeDeleted} onClose={() => setNodeToBeDeleted(null)} onConfirm={confirmDelete} />}
-
-      <Button onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
-        Ajouter
-      </Button>
     </>
   )
 }
