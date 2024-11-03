@@ -43,7 +43,7 @@ const countChildrens = (node: Node): number => {
 
 export async function GET(): Promise<Response> {
   try {
-    const nodes = await readCSV<Node>('nodes.csv')
+    let nodes = await readCSV<Node>('nodes.csv')
     const relations = await readCSV<Relationship>('relationships.csv')
 
     const nodeMap = new Map<number, Node>()
@@ -56,6 +56,11 @@ export async function GET(): Promise<Response> {
         parent.childrens.push(child)
       }
     })
+
+    // let nextId = 106
+    // for (let i = 0; i < 0; i++) {
+    //   nodes = nodes.concat(nodes.map(n => ({ ...n, node_id: nextId++ })))
+    // }
 
     const features = nodes.filter(n => n.type === 'Feature')
 
