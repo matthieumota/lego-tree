@@ -229,11 +229,11 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     if (dragged.current && dragged.current.node_id !== node?.node_id) {
       const sourceNode = dragged.current
 
-      if (!asParent && isFirst(features, node)) {
-        sourceNode.status = node?.status || status || sourceNode.status
-      }
-
       setFeatures(f => {
+        if (!asParent && isFirst(f, node)) {
+          sourceNode.status = node?.status || status || sourceNode.status
+        }
+
         let isAbove = true
 
         if (node) {
@@ -251,7 +251,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   }, [])
 
   const handleSelect = useCallback((node: Node) => {
-    setNodeOpened(node)
+    setNodeOpened(n => n && n.node_id === node.node_id ? null : node)
   }, [])
 
   const handleAdd = (parent: number | null, newNode: Node) => {
@@ -269,9 +269,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     if (nodeToBeEdited) {
       setFeatures(f => updateNode(f, [nodeToBeEdited.node_id], () => (newNode)))
       setNodeToBeEdited(null)
-    }
-
-    if (nodeOpened) {
+    } else if (nodeOpened) {
       setFeatures(f => updateNode(f, [nodeOpened.node_id], () => (newNode)))
     }
   }
