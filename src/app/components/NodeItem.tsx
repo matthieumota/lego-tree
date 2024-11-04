@@ -15,7 +15,7 @@ interface Props {
   onEdit: (node: Node) => void,
   onDragStart: (node: Node) => void,
   onDrop: (node: Node, asParent: boolean) => void,
-  onSelect: (node: Node) => void,
+  onSelect: (node: Node, parent: Node | null) => void,
 }
 
 const NodeState: React.FC<{ node: Node }> = React.memo(({ node }) => {
@@ -27,6 +27,8 @@ const NodeState: React.FC<{ node: Node }> = React.memo(({ node }) => {
     </>
   )
 })
+
+NodeState.displayName = 'NodeState'
 
 const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)

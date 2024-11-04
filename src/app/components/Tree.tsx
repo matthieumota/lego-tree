@@ -328,7 +328,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     onDragStart: handleDragStart,
     onDrop: handleDrop,
     onSelect: handleSelect,
-  }), [])
+  }), [toggleOpen, handleDelete, handleEdit, handleDragStart, handleDrop, handleSelect])
 
   return (
     <>
@@ -373,7 +373,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
 
             {nodeOpened &&
               <div className="col-span-2">
-                <NodeDisplay node={nodeOpened} onConfirm={confirmEdit} />
+                <NodeDisplay node={nodeOpened} onConfirm={confirmEdit} onAdd={handleAdd} />
               </div>
             }
           </div>

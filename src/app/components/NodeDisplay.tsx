@@ -2,14 +2,18 @@ import { ChangeEvent, useContext, useEffect, useState } from 'react'
 import { Node } from './Tree'
 import NodeItem from './NodeItem'
 import { TreeContext } from '../context/TreeContext'
+import Button from './Button'
+
+let nextId = 106
 
 interface Props {
   node: Node | null,
   onConfirm: (newNode: Partial<Node>) => void,
+  onAdd: (parent: number | null, newNode: Node) => void,
 }
 
-const NodeDisplay: React.FC<Props> = ({ node, onConfirm }: Props): JSX.Element | null => {
-  const [newNode, setNewNode] = useState<Node | null>(node)
+const NodeDisplay: React.FC<Props> = ({ node, onConfirm, onAdd }: Props): JSX.Element | null => {
+  const [newNode, setNewNode] = useState<Node | null>(null)
   const { onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect } = useContext(TreeContext)
 
   useEffect(() => {
@@ -75,8 +79,9 @@ const NodeDisplay: React.FC<Props> = ({ node, onConfirm }: Props): JSX.Element |
           </>
         }
 
-        <div className="flex gap-4 flex-row-reverse">
-        </div>
+        <Button className="block w-full" onClick={() => onAdd(node ? node.node_id : null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
+          Ajouter
+        </Button>
       </form>
     </div>
   )
