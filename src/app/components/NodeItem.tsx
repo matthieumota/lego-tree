@@ -5,7 +5,7 @@ import React, { DragEvent, useContext } from 'react'
 import { Node } from './Tree'
 import Badge from './Badge'
 import Button from './Button'
-import { TreeContext } from '../context/TreeContext'
+import { GlobalContext } from '../context/TreeContext'
 
 interface Props {
   node: Node,
@@ -18,9 +18,18 @@ interface Props {
   onSelect: (node: Node) => void,
 }
 
+const NodeState: React.FC<{ node: Node }> = React.memo(({ node }) => {
+  const { nodeOpened } = useContext(GlobalContext)
+
+  return (
+    <>
+      {nodeOpened && nodeOpened.node_id === node.node_id ? 'Fermer' : 'Ouvrir'}
+    </>
+  )
+})
+
 const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
-  const { nodeOpened } = useContext(TreeContext)
 
   const handleDrop = (event: DragEvent<Element>, asParent: boolean) => {
     event.stopPropagation()
@@ -62,7 +71,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>
               <div className="text-center mt-4">
                 <Button onClick={() => onSelect(node)}>
-                  {nodeOpened && nodeOpened.node_id === node.node_id ? 'Fermer' : 'Ouvrir'}
+                  <NodeState node={node} />
                 </Button>
               </div>
             </div>
