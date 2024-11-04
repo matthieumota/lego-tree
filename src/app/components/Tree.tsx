@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { DragEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
 import Button from './Button'
 import DeleteModal from './DeleteModal'
@@ -169,6 +169,20 @@ const isChild = (nodes: Array<Node>, target: Node | null): boolean => {
   return false
 }
 
+const isFirst = (nodes: Array<Node>, node: Node | null): boolean => {
+  if (!node) {
+    return true
+  }
+
+  for (const n of nodes) {
+    if (n.node_id === node.node_id) {
+      return true
+    }
+  }
+
+  return false
+}
+
 const moveNode = (nodes: Array<Node>, node: Node, target: Node | null, asParent: boolean = false, isAbove: boolean = false): Array<Node> => {
   if (isChild(node.childrens, target)) {
     return nodes
@@ -210,10 +224,15 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     dragged.current = node
   }, [])
 
-  const handleDrop = useCallback((node: Node | null, asParent: boolean = false, status: string | null = null) => {
+  const handleDrop = useCallback((event: DragEvent<Element>, node: Node | null, asParent: boolean = false, status: string | null = null) => {
     if (dragged.current && dragged.current.node_id !== node?.node_id) {
+      event.stopPropagation()
+
       const sourceNode = dragged.current
-      sourceNode.status = (asParent) ? node?.status || sourceNode.status : status || sourceNode.status
+
+      if (!asParent && isFirst(features, node)) {
+        sourceNode.status = node?.status || status || sourceNode.status
+      }
 
       setFeatures(f => {
         let isAbove = true
@@ -303,9 +322,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
             <div key={status}
               onDrop={(e) => {
                 e.preventDefault()
-                if (dragged.current?.status !== status && dragged.current?.type === 'Feature') {
-                  handleDrop(null, false, status)
-                }
+                handleDrop(e, null, false, status)
               }}
               onDragOver={(e) => e.preventDefault()}
             >
