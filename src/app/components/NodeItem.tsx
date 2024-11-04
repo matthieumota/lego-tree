@@ -1,10 +1,11 @@
 'use client'
 
 import cn from 'classnames'
-import React, { DragEvent } from 'react'
+import React, { DragEvent, useContext } from 'react'
 import { Node } from './Tree'
 import Badge from './Badge'
 import Button from './Button'
+import { TreeContext } from '../context/TreeContext'
 
 interface Props {
   node: Node,
@@ -19,6 +20,7 @@ interface Props {
 
 const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
+  const { nodeOpened } = useContext(TreeContext)
 
   const handleDrop = (event: DragEvent<Element>, asParent: boolean) => {
     event.stopPropagation()
@@ -62,7 +64,9 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
               <p className="text-gray-500 text-center">{node.description}</p>
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>
               <div className="text-center">
-                <Button onClick={() => onSelect(node)}>Ouvrir</Button>
+                <Button onClick={() => onSelect(node)}>
+                  {nodeOpened && nodeOpened.node_id === node.node_id ? 'Fermer' : 'Ouvrir'}
+                </Button>
               </div>
             </div>
 

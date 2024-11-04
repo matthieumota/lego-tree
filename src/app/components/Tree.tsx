@@ -1,12 +1,13 @@
 'use client'
 
-import React, { DragEvent, useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
 import Button from './Button'
 import DeleteModal from './DeleteModal'
 import NodeModal from './NodeModal'
 import cn from 'classnames'
 import NodeDisplay from './NodeDisplay'
+import { TreeContext, TreeContextType } from '../context/TreeContext'
 
 let nextId = 106
 
@@ -44,6 +45,21 @@ const nodesEqual = (a: Array<Node>, b: Array<Node>): boolean => {
   }
 
   return true
+}
+
+const findNode = (nodes: Array<Node>, id: number): Node | null => {
+  for (const node of nodes) {
+    if (node.node_id == id) {
+      return node
+    }
+    if (node.childrens) {
+      const found = findNode(node.childrens, id)
+      if (found) {
+        return found
+      }
+    }
+  }
+  return null
 }
 
 const updateAllNode = (nodes: Array<Node>, update: Partial<Node>): Array<Node> => {
@@ -207,6 +223,20 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const [nodeToBeDeleted, setNodeToBeDeleted] = useState<Node | null>(null)
   const [nodeOpened, setNodeOpened] = useState<Node | null>(null)
 
+  useEffect(() => {
+    setNodeOpened(n => {
+      if (n) {
+        const updatedNode = findNode(features, n.node_id)
+
+        if (updatedNode) {
+          return updatedNode
+        }
+      }
+
+      return n
+    })
+  }, [features])
+
   const toggleOpen = useCallback((nodeId: number) => {
     setFeatures(f => updateNode(f, [nodeId], (node) => ({
       open: !node.open,
@@ -285,44 +315,63 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     }
   }
 
+  const treeContext: TreeContextType = {
+    onToggle: toggleOpen,
+    onDelete: handleDelete,
+    onEdit: handleEdit,
+    onDragStart: handleDragStart,
+    onDrop: handleDrop,
+    onSelect: handleSelect,
+    nodeOpened
+  }
+
   return (
     <>
-      <div className={cn({'grid lg:grid-cols-6 gap-12': nodeOpened})}>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 col-span-5">
-          {filteredNodes.map(({ status, nodes }) =>
-            <div key={status}
-              onDrop={(e) => {
-                e.preventDefault()
-                handleDrop(null, false, status)
-              }}
-              onDragOver={(e) => e.preventDefault()}
-            >
-              <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
-              {nodes.map((node: Node) =>
-                <NodeItem
-                  key={node.node_id}
-                  node={node}
-                  level={0}
-                  onToggle={toggleOpen}
-                  onDelete={handleDelete}
-                  onEdit={handleEdit}
-                  onDragStart={handleDragStart}
-                  onDrop={handleDrop}
-                  onSelect={handleSelect}
-                />
+      <TreeContext.Provider value={treeContext}>
+        <div className={cn({'grid lg:grid-cols-8 gap-12': nodeOpened})}>
+          <div className="col-span-6">
+            <h1 className="text-center mb-12 text-3xl font-bold">LEGO Tree Challenge</h1>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredNodes.map(({ status, nodes }) =>
+                <div key={status}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    handleDrop(null, false, status)
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
+                  {nodes.map((node: Node) =>
+                    <NodeItem
+                      key={node.node_id}
+                      node={node}
+                      level={0}
+                      onToggle={toggleOpen}
+                      onDelete={handleDelete}
+                      onEdit={handleEdit}
+                      onDragStart={handleDragStart}
+                      onDrop={handleDrop}
+                      onSelect={handleSelect}
+                    />
+                  )}
+
+                  {status === 'Backlog' &&
+                    <Button className="block w-full" onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
+                      Ajouter
+                    </Button>
+                  }
+                </div>
               )}
-
-              {status === 'Backlog' &&
-                <Button className="block w-full" onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
-                  Ajouter
-                </Button>
-              }
             </div>
-          )}
-        </div>
+          </div>
 
-        {nodeOpened && <NodeDisplay node={nodeOpened} onConfirm={confirmEdit} />}
-      </div>
+          {nodeOpened &&
+            <div className="col-span-2">
+              <NodeDisplay node={nodeOpened} onConfirm={confirmEdit} />
+            </div>
+          }
+        </div>
+      </TreeContext.Provider>
 
       {nodeToBeEdited && <NodeModal node={nodeToBeEdited} onClose={cancelEdit} onConfirm={confirmEdit} />}
       {nodeToBeDeleted && <DeleteModal node={nodeToBeDeleted} onClose={() => setNodeToBeDeleted(null)} onConfirm={confirmDelete} />}

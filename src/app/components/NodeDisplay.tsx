@@ -1,5 +1,7 @@
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useContext, useEffect, useState } from 'react'
 import { Node } from './Tree'
+import NodeItem from './NodeItem'
+import { TreeContext } from '../context/TreeContext'
 
 interface Props {
   node: Node | null,
@@ -8,6 +10,7 @@ interface Props {
 
 const NodeDisplay: React.FC<Props> = ({ node, onConfirm }: Props): JSX.Element | null => {
   const [newNode, setNewNode] = useState<Node | null>(node)
+  const { onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect } = useContext(TreeContext)
 
   useEffect(() => {
     setNewNode(node)
@@ -18,16 +21,14 @@ const NodeDisplay: React.FC<Props> = ({ node, onConfirm }: Props): JSX.Element |
   }
 
   const handleChange = (e: ChangeEvent, name: string) => {
-    const n = { ...newNode, [name]: (e.target as HTMLInputElement).value }
-    setNewNode(n)
-    onConfirm(n)
+    onConfirm({ ...newNode, [name]: (e.target as HTMLInputElement).value })
   }
 
   return (
     <div>
       <h2 className="font-bold">Noeud {node?.node_id}</h2>
 
-      <form onSubmit={() => onConfirm(newNode)}>
+      <form onSubmit={(e) => e.preventDefault()}>
         <div className="mb-3">
           <label htmlFor="name" className="block mb-2">Nom</label>
           <input className="w-full" type="text" id="name" value={newNode.name} onChange={(e) => handleChange(e, 'name')} />
@@ -65,6 +66,14 @@ const NodeDisplay: React.FC<Props> = ({ node, onConfirm }: Props): JSX.Element |
           <label htmlFor="end_date" className="block mb-2">Date de fin</label>
           <input className="w-full" type="date" id="end_date" value={newNode.end_date} onChange={(e) => handleChange(e, 'end_date')} />
         </div>
+
+        {newNode.childrens.length > 0 && newNode.open &&
+          <>
+            {newNode.childrens.map((child) => (
+              <NodeItem key={child.node_id} node={child} level={1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} onSelect={onSelect} />
+            ))}
+          </>
+        }
 
         <div className="flex gap-4 flex-row-reverse">
         </div>
