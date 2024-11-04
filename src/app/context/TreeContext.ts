@@ -7,7 +7,7 @@ export interface TreeContextType {
   onEdit: (node: Node) => void,
   onDragStart: (node: Node) => void,
   onDrop: (node: Node, asParent: boolean) => void,
-  onSelect: (node: Node) => void,
+  onSelect: (node: Node, parent: Node | null) => void,
 }
 
 export const TreeContext = createContext<TreeContextType>({

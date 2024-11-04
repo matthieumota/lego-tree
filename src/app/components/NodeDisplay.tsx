@@ -8,11 +8,13 @@ let nextId = 106
 
 interface Props {
   node: Node | null,
+  parent: Node | null,
   onConfirm: (newNode: Partial<Node>) => void,
   onAdd: (parent: number | null, newNode: Node) => void,
+  onParentOpened: (node: Node) => void,
 }
 
-const NodeDisplay: React.FC<Props> = ({ node, onConfirm, onAdd }: Props): JSX.Element | null => {
+const NodeDisplay: React.FC<Props> = ({ node, parent, onConfirm, onAdd, onParentOpened }: Props): JSX.Element | null => {
   const [newNode, setNewNode] = useState<Node | null>(null)
   const { onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect } = useContext(TreeContext)
 
@@ -30,6 +32,7 @@ const NodeDisplay: React.FC<Props> = ({ node, onConfirm, onAdd }: Props): JSX.El
 
   return (
     <div>
+      {parent && <Button className="mb-3" onClick={() => onParentOpened(parent)}>Parent: {parent.name}</Button>}
       <h2 className="font-bold">{newNode.type} {node?.node_id}</h2>
 
       <form onSubmit={(e) => e.preventDefault()}>
@@ -74,7 +77,7 @@ const NodeDisplay: React.FC<Props> = ({ node, onConfirm, onAdd }: Props): JSX.El
         {newNode.childrens.length > 0 &&
           <>
             {newNode.childrens.map((child) => (
-              <NodeItem key={child.node_id} node={child} level={1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} onSelect={onSelect} />
+              <NodeItem key={child.node_id} node={child} level={1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} onSelect={onSelect} parent={node} />
             ))}
           </>
         }

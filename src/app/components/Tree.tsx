@@ -64,6 +64,21 @@ const findNode = (nodes: Array<Node>, id: number): Node | null => {
   return null
 }
 
+export const findParentNode = (nodes: Array<Node>, id: number): Node | null => {
+  for (const node of nodes) {
+    if (node.childrens.some(child => child.node_id === id)) {
+      return node
+    }
+
+    const parent = findParentNode(node.childrens, id)
+    if (parent) {
+      return parent
+    }
+  }
+
+  return null
+}
+
 const updateAllNode = (nodes: Array<Node>, update: Partial<Node>): Array<Node> => {
   return nodes.map((node: Node) => ({
     ...node, ...update , childrens: updateAllNode(node.childrens, update)
@@ -224,6 +239,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const [nodeToBeEdited, setNodeToBeEdited] = useState<Node | null>(null)
   const [nodeToBeDeleted, setNodeToBeDeleted] = useState<Node | null>(null)
   const [nodeOpened, setNodeOpened] = useState<Node | null>(null)
+  const [parentNode, setParentNode] = useState<Node | null>(null)
 
   useEffect(() => {
     setNodeOpened(n => {
@@ -282,9 +298,16 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     }
   }, [])
 
-  const handleSelect = useCallback((node: Node) => {
+  const handleSelect = useCallback((node: Node, parent: Node | null) => {
     setNodeOpened(n => n && n.node_id === node.node_id ? null : node)
+    setParentNode(parent)
   }, [])
+
+  const handleParent = useCallback((node: Node) => {
+    const parent = findParentNode(features, node.node_id)
+    setNodeOpened(node)
+    setParentNode(parent)
+  }, [features]);
 
   const handleAdd = (parent: number | null, newNode: Node) => {
     setFeatures(addNode(features, parent, newNode))
@@ -373,7 +396,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
 
             {nodeOpened &&
               <div className="col-span-2">
-                <NodeDisplay node={nodeOpened} onConfirm={confirmEdit} onAdd={handleAdd} />
+                <NodeDisplay node={nodeOpened} parent={parentNode} onConfirm={confirmEdit} onAdd={handleAdd} onParentOpened={handleParent} />
               </div>
             }
           </div>

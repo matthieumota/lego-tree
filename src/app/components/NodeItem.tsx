@@ -16,6 +16,7 @@ interface Props {
   onDragStart: (node: Node) => void,
   onDrop: (node: Node, asParent: boolean) => void,
   onSelect: (node: Node, parent: Node | null) => void,
+  parent?: Node | null,
 }
 
 const NodeState: React.FC<{ node: Node }> = React.memo(({ node }) => {
@@ -30,7 +31,7 @@ const NodeState: React.FC<{ node: Node }> = React.memo(({ node }) => {
 
 NodeState.displayName = 'NodeState'
 
-const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect }: Props): JSX.Element => {
+const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect, parent = null }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
 
   const handleDrop = (event: DragEvent<Element>, asParent: boolean) => {
@@ -68,11 +69,11 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         {node.open &&
           <div className="p-4" onDrop={(e) => handleDrop(e, true)} onDragOver={(e) => e.preventDefault()}>
             <div className="mb-4">
-            <p className="text-gray-500 text-center">{node.type}</p>
+            <p className="text-gray-500 text-center">{node.type} (Niveau {level})</p>
               <p className="text-gray-500 text-center">{node.description}</p>
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>
               <div className="text-center mt-4">
-                <Button onClick={() => onSelect(node)}>
+                <Button onClick={() => onSelect(node, parent)}>
                   <NodeState node={node} />
                 </Button>
               </div>
@@ -89,7 +90,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
       {node.childrens.length > 0 && node.open &&
         <>
           {node.childrens.map((child) => (
-            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} onSelect={onSelect} />
+            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} onSelect={onSelect} parent={node} />
           ))}
         </>
       }
