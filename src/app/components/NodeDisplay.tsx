@@ -12,9 +12,10 @@ interface Props {
   onConfirm: (newNode: Partial<Node>) => void,
   onAdd: (parent: number | null, newNode: Node) => void,
   onParentOpened: (node: Node) => void,
+  onClose: () => void,
 }
 
-const NodeDisplay: React.FC<Props> = ({ node, parent, onConfirm, onAdd, onParentOpened }: Props): JSX.Element | null => {
+const NodeDisplay: React.FC<Props> = ({ node, parent, onConfirm, onAdd, onParentOpened, onClose }: Props): JSX.Element | null => {
   const [newNode, setNewNode] = useState<Node | null>(null)
   const { onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect } = useContext(TreeContext)
 
@@ -32,7 +33,11 @@ const NodeDisplay: React.FC<Props> = ({ node, parent, onConfirm, onAdd, onParent
 
   return (
     <div>
-      {parent && <Button className="mb-3" onClick={() => onParentOpened(parent)}>Parent: {parent.name}</Button>}
+      <div className="flex justify-between gap-12 mb-3">
+        {parent && <Button onClick={() => onParentOpened(parent)}>Parent: {parent.name}</Button>}
+        <Button onClick={onClose}>Fermer</Button>
+      </div>
+
       <h2 className="font-bold">{newNode.type} {node?.node_id}</h2>
 
       <form onSubmit={(e) => e.preventDefault()}>

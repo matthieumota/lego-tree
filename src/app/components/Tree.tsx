@@ -305,11 +305,16 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     setParentNode(parent)
   }, [])
 
-  const handleParent = useCallback((node: Node) => {
+  const handleParent = (node: Node) => {
     const parent = findParentNode(features, node.node_id)
     setNodeOpened(node)
     setParentNode(parent)
-  }, [features]);
+  }
+
+  const handleClose = () => {
+    setNodeOpened(null)
+    setParentNode(null)
+  }
 
   const handleAdd = (parent: number | null, newNode: Node) => {
     setFeatures(addNode(features, parent, newNode))
@@ -458,7 +463,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
 
             {nodeOpened &&
               <div className="col-span-2">
-                <NodeDisplay node={nodeOpened} parent={parentNode} onConfirm={confirmEdit} onAdd={handleAdd} onParentOpened={handleParent} />
+                <NodeDisplay node={nodeOpened} parent={parentNode} onConfirm={confirmEdit} onAdd={handleAdd} onParentOpened={handleParent} onClose={handleClose} />
               </div>
             }
           </div>
