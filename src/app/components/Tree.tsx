@@ -322,6 +322,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
                       <div
                         key={virtualItem.key}
                         ref={virtualizers.current[status].measureElement}
+                        data-index={virtualItem.key}
                         style={{
                           position: 'absolute',
                           top: 0,
