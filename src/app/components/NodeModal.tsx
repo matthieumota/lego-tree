@@ -92,7 +92,7 @@ const NodeModal: React.FC<Props> = ({ node, onClose, onConfirm }: Props): JSX.El
               <div className="mb-3">
                 <label htmlFor="status" className="block mb-2">Statut</label>
                 <select className="w-full" id="status" value={newNode.status} onChange={(e) => handleChange(e, 'status')}>
-                  {['Backlog', 'In Progress', 'In Review', 'Done'].map((name) =>
+                  {['To Do', 'Backlog', 'In Progress', 'In Review', 'Done'].map((name) =>
                     <option key={name} value={name}>{name}</option>
                   )}
                 </select>
