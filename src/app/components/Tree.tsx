@@ -168,6 +168,20 @@ const isChild = (nodes: Array<Node>, target: Node | null): boolean => {
   return false
 }
 
+const isFirst = (nodes: Array<Node>, node: Node | null): boolean => {
+  if (!node) {
+    return true
+  }
+
+  for (const n of nodes) {
+    if (n.node_id === node.node_id) {
+      return true
+    }
+  }
+
+  return false
+}
+
 const moveNode = (nodes: Array<Node>, node: Node, target: Node | null, asParent: boolean = false, isAbove: boolean = false): Array<Node> => {
   if (isChild(node.childrens, target)) {
     return nodes
@@ -213,7 +227,10 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
       event.stopPropagation()
 
       const sourceNode = dragged.current
-      sourceNode.status = (asParent) ? node?.status || sourceNode.status : status || sourceNode.status
+
+      if (!asParent && isFirst(features, node)) {
+        sourceNode.status = node?.status || status || sourceNode.status
+      }
 
       setFeatures(f => {
         let isAbove = true
