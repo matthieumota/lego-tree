@@ -13,18 +13,20 @@ interface Props {
   onDelete: (node: Node) => void,
   onEdit: (node: Node) => void,
   onDragStart: (node: Node) => void,
-  onDrop: (event: DragEvent<Element>, node: Node, asParent: boolean) => void,
+  onDrop: (node: Node, asParent: boolean) => void,
 }
 
 const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
 
   const handleDrop = (event: DragEvent<Element>, asParent: boolean) => {
+    event.stopPropagation()
+
     if (level === 2 && asParent) {
       return
     }
 
-    onDrop(event, node, asParent)
+    onDrop(node, asParent)
   }
 
   return (
