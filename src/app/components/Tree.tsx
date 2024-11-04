@@ -224,10 +224,8 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     dragged.current = node
   }, [])
 
-  const handleDrop = useCallback((event: DragEvent<Element>, node: Node | null, asParent: boolean = false, status: string | null = null) => {
+  const handleDrop = useCallback((node: Node | null, asParent: boolean = false, status: string | null = null) => {
     if (dragged.current && dragged.current.node_id !== node?.node_id) {
-      event.stopPropagation()
-
       const sourceNode = dragged.current
 
       if (!asParent && isFirst(features, node)) {
@@ -322,7 +320,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
             <div key={status}
               onDrop={(e) => {
                 e.preventDefault()
-                handleDrop(e, null, false, status)
+                handleDrop(null, false, status)
               }}
               onDragOver={(e) => e.preventDefault()}
             >
