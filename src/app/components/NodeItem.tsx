@@ -1,10 +1,11 @@
 'use client'
 
 import cn from 'classnames'
-import React, { DragEvent } from 'react'
+import React, { DragEvent, useContext } from 'react'
 import { Node } from './Tree'
 import Badge from './Badge'
 import Button from './Button'
+import { GlobalContext } from '../context/TreeContext'
 
 interface Props {
   node: Node,
@@ -14,9 +15,23 @@ interface Props {
   onEdit: (node: Node) => void,
   onDragStart: (node: Node) => void,
   onDrop: (node: Node, asParent: boolean) => void,
+  onSelect: (node: Node, parent: Node | null) => void,
+  parent?: Node | null,
 }
 
-const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop }: Props): JSX.Element => {
+const NodeState: React.FC<{ node: Node }> = React.memo(({ node }) => {
+  const { nodeOpened } = useContext(GlobalContext)
+
+  return (
+    <>
+      {nodeOpened && nodeOpened.node_id === node.node_id ? 'Fermer' : 'Ouvrir'}
+    </>
+  )
+})
+
+NodeState.displayName = 'NodeState'
+
+const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect, parent = null }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
 
   const handleDrop = (event: DragEvent<Element>, asParent: boolean) => {
@@ -32,9 +47,6 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
   return (
     <>
       <div className={cn(`border shadow rounded-lg mb-4`, {
-        'ml-0': level == 0,
-        'ml-8': level == 1,
-        'ml-16': level == 2,
         'bg-slate-50': node.type === 'Feature',
         'bg-green-50': node.type === 'User Story',
         'bg-blue-50': node.type === 'Task',
@@ -57,9 +69,14 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         {node.open &&
           <div className="p-4" onDrop={(e) => handleDrop(e, true)} onDragOver={(e) => e.preventDefault()}>
             <div className="mb-4">
-            <p className="text-gray-500 text-center">{node.type}</p>
+            <p className="text-gray-500 text-center">{node.type} (Niveau {level})</p>
               <p className="text-gray-500 text-center">{node.description}</p>
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>
+              <div className="text-center mt-4">
+                <Button onClick={() => onSelect(node, parent)}>
+                  <NodeState node={node} />
+                </Button>
+              </div>
             </div>
 
             <div className="text-center flex gap-4 justify-center">
@@ -73,7 +90,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
       {node.childrens.length > 0 && node.open &&
         <>
           {node.childrens.map((child) => (
-            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} />
+            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} onSelect={onSelect} parent={node} />
           ))}
         </>
       }

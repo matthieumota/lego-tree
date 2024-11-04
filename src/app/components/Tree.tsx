@@ -1,11 +1,14 @@
 'use client'
 
-import React, { DragEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import NodeItem from './NodeItem'
 import Button from './Button'
 import DeleteModal from './DeleteModal'
 import NodeModal from './NodeModal'
 import { useVirtualizer, VirtualItem } from '@tanstack/react-virtual'
+import cn from 'classnames'
+import NodeDisplay from './NodeDisplay'
+import { GlobalContext, GlobalContextType, TreeContext, TreeContextType } from '../context/TreeContext'
 
 let nextId = 106
 
@@ -43,6 +46,38 @@ const nodesEqual = (a: Array<Node>, b: Array<Node>): boolean => {
   }
 
   return true
+}
+
+const findNode = (nodes: Array<Node>, id: number): Node | null => {
+  for (const node of nodes) {
+    if (node.node_id == id) {
+      return node
+    }
+  
+    if (node.childrens) {
+      const found = findNode(node.childrens, id)
+      if (found) {
+        return found
+      }
+    }
+  }
+
+  return null
+}
+
+export const findParentNode = (nodes: Array<Node>, id: number): Node | null => {
+  for (const node of nodes) {
+    if (node.childrens.some(child => child.node_id === id)) {
+      return node
+    }
+
+    const parent = findParentNode(node.childrens, id)
+    if (parent) {
+      return parent
+    }
+  }
+
+  return null
 }
 
 const updateAllNode = (nodes: Array<Node>, update: Partial<Node>): Array<Node> => {
@@ -205,6 +240,22 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const dragged = useRef<Node>()
   const [nodeToBeEdited, setNodeToBeEdited] = useState<Node | null>(null)
   const [nodeToBeDeleted, setNodeToBeDeleted] = useState<Node | null>(null)
+  const [nodeOpened, setNodeOpened] = useState<Node | null>(null)
+  const [parentNode, setParentNode] = useState<Node | null>(null)
+
+  useEffect(() => {
+    setNodeOpened(n => {
+      if (n) {
+        const updatedNode = findNode(features, n.node_id)
+
+        if (updatedNode) {
+          return updatedNode
+        }
+      }
+
+      return n
+    })
+  }, [features])
 
   const toggleOpen = useCallback((nodeId: number) => {
     setFeatures(f => updateNode(f, [nodeId], (node) => ({
@@ -228,11 +279,11 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     if (dragged.current && dragged.current.node_id !== node?.node_id) {
       const sourceNode = dragged.current
 
-      if (!asParent && isFirst(features, node)) {
-        sourceNode.status = node?.status || status || sourceNode.status
-      }
-
       setFeatures(f => {
+        if (!asParent && isFirst(f, node)) {
+          sourceNode.status = node?.status || status || sourceNode.status
+        }
+
         let isAbove = true
 
         if (node) {
@@ -249,6 +300,17 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     }
   }, [])
 
+  const handleSelect = useCallback((node: Node, parent: Node | null) => {
+    setNodeOpened(n => n && n.node_id === node.node_id ? null : node)
+    setParentNode(parent)
+  }, [])
+
+  const handleParent = useCallback((node: Node) => {
+    const parent = findParentNode(features, node.node_id)
+    setNodeOpened(node)
+    setParentNode(parent)
+  }, [features]);
+
   const handleAdd = (parent: number | null, newNode: Node) => {
     setFeatures(addNode(features, parent, newNode))
   }
@@ -264,6 +326,8 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     if (nodeToBeEdited) {
       setFeatures(f => updateNode(f, [nodeToBeEdited.node_id], () => (newNode)))
       setNodeToBeEdited(null)
+    } else if (nodeOpened) {
+      setFeatures(f => updateNode(f, [nodeOpened.node_id], () => (newNode)))
     }
   }
 
@@ -279,7 +343,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   }
 
   const estimateSize = (node: Node) => {
-    const baseSize = node.open ? 230 : 80
+    const baseSize = node.open ? 270 : 80
     let totalSize = baseSize
 
     if (node.open) {
@@ -312,65 +376,94 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     })
   }, [filteredNodes])
 
+  const globalContext: GlobalContextType = useMemo(() => ({
+    nodeOpened
+  }), [nodeOpened])
+
+  const treeContext: TreeContextType = useMemo(() => ({
+    onToggle: toggleOpen,
+    onDelete: handleDelete,
+    onEdit: handleEdit,
+    onDragStart: handleDragStart,
+    onDrop: handleDrop,
+    onSelect: handleSelect,
+  }), [toggleOpen, handleDelete, handleEdit, handleDragStart, handleDrop, handleSelect])
+
   return (
     <>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredNodes.map(({ status, nodes }) => {
-          return (
-            <div key={status}
-              onDrop={(e) => {
-                e.preventDefault()
-                handleDrop(null, false, status)
-              }}
-              onDragOver={(e) => e.preventDefault()}
-            >
-              <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
-              <div ref={(el) => parentRefs.current[status] = el} style={{ height: 550, overflow: 'auto' }}>
-                <div style={{
-                  height: `${virtualizers.current[status].getTotalSize()}px`,
-                  position: 'relative',
-                }}>
-                  {virtualizers.current[status].getVirtualItems().map((virtualItem: VirtualItem) => {
-                    const node = nodes[virtualItem.index]
+      <GlobalContext.Provider value={globalContext}>
+        <TreeContext.Provider value={treeContext}>
+          <div className={cn({'grid lg:grid-cols-8 gap-12': nodeOpened})}>
+            <div className="col-span-6">
+              <h1 className="text-center mb-12 text-3xl font-bold">LEGO Tree Challenge</h1>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredNodes.map(({ status, nodes }) => {
+                  return (
+                    <div key={status}
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        handleDrop(null, false, status)
+                      }}
+                      onDragOver={(e) => e.preventDefault()}
+                    >
+                      <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
+                      <div ref={(el) => parentRefs.current[status] = el} style={{ height: 550, overflow: 'auto' }}>
+                        <div style={{
+                          height: `${virtualizers.current[status].getTotalSize()}px`,
+                          position: 'relative',
+                        }}>
+                          {virtualizers.current[status].getVirtualItems().map((virtualItem: VirtualItem) => {
+                            const node = nodes[virtualItem.index]
 
-                    return (
-                      <div
-                        key={virtualItem.key}
-                        ref={virtualizers.current[status].measureElement}
-                        data-index={virtualItem.key}
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: `${virtualItem.size}px`,
-                          transform: `translateY(${virtualItem.start}px)`,
-                        }}
-                      >
-                        <NodeItem
-                          node={node}
-                          level={0}
-                          onToggle={toggleOpen}
-                          onDelete={handleDelete}
-                          onEdit={handleEdit}
-                          onDragStart={handleDragStart}
-                          onDrop={handleDrop}
-                        />
+                            return (
+                              <div
+                                key={virtualItem.key}
+                                ref={virtualizers.current[status].measureElement}
+                                data-index={virtualItem.key}
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  height: `${virtualItem.size}px`,
+                                  transform: `translateY(${virtualItem.start}px)`,
+                                }}
+                              >
+                                <NodeItem
+                                  node={node}
+                                  level={0}
+                                  onToggle={toggleOpen}
+                                  onDelete={handleDelete}
+                                  onEdit={handleEdit}
+                                  onDragStart={handleDragStart}
+                                  onDrop={handleDrop}
+                                  onSelect={handleSelect}
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
                       </div>
-                    )
-                  })}
-                </div>
-              </div>
 
-              {status === 'Backlog' &&
-                <Button className="block w-full" onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
-                  Ajouter
-                </Button>
-              }
+                      {status === 'Backlog' &&
+                        <Button className="block w-full" onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
+                          Ajouter
+                        </Button>
+                      }
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          )
-        })}
-      </div>
+
+            {nodeOpened &&
+              <div className="col-span-2">
+                <NodeDisplay node={nodeOpened} parent={parentNode} onConfirm={confirmEdit} onAdd={handleAdd} onParentOpened={handleParent} />
+              </div>
+            }
+          </div>
+        </TreeContext.Provider>
+      </GlobalContext.Provider>
 
       {nodeToBeEdited && <NodeModal node={nodeToBeEdited} onClose={cancelEdit} onConfirm={confirmEdit} />}
       {nodeToBeDeleted && <DeleteModal node={nodeToBeDeleted} onClose={() => setNodeToBeDeleted(null)} onConfirm={confirmDelete} />}
