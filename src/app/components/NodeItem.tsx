@@ -14,9 +14,10 @@ interface Props {
   onEdit: (node: Node) => void,
   onDragStart: (node: Node) => void,
   onDrop: (node: Node, asParent: boolean) => void,
+  onSelect: (node: Node) => void,
 }
 
-const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop }: Props): JSX.Element => {
+const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop, onSelect }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
 
   const handleDrop = (event: DragEvent<Element>, asParent: boolean) => {
@@ -60,6 +61,9 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
             <p className="text-gray-500 text-center">{node.type}</p>
               <p className="text-gray-500 text-center">{node.description}</p>
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>
+              <div className="text-center">
+                <Button onClick={() => onSelect(node)}>Ouvrir</Button>
+              </div>
             </div>
 
             <div className="text-center flex gap-4 justify-center">
@@ -73,7 +77,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
       {node.childrens.length > 0 && node.open &&
         <>
           {node.childrens.map((child) => (
-            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} />
+            <NodeItem key={child.node_id} node={child} level={level + 1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} onSelect={onSelect} />
           ))}
         </>
       }

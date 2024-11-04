@@ -5,6 +5,8 @@ import NodeItem from './NodeItem'
 import Button from './Button'
 import DeleteModal from './DeleteModal'
 import NodeModal from './NodeModal'
+import cn from 'classnames'
+import NodeDisplay from './NodeDisplay'
 
 let nextId = 106
 
@@ -203,6 +205,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
   const dragged = useRef<Node>()
   const [nodeToBeEdited, setNodeToBeEdited] = useState<Node | null>(null)
   const [nodeToBeDeleted, setNodeToBeDeleted] = useState<Node | null>(null)
+  const [nodeOpened, setNodeOpened] = useState<Node | null>(null)
 
   const toggleOpen = useCallback((nodeId: number) => {
     setFeatures(f => updateNode(f, [nodeId], (node) => ({
@@ -247,6 +250,10 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     }
   }, [])
 
+  const handleSelect = useCallback((node: Node) => {
+    setNodeOpened(node)
+  }, [])
+
   const handleAdd = (parent: number | null, newNode: Node) => {
     setFeatures(addNode(features, parent, newNode))
   }
@@ -263,6 +270,10 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
       setFeatures(f => updateNode(f, [nodeToBeEdited.node_id], () => (newNode)))
       setNodeToBeEdited(null)
     }
+
+    if (nodeOpened) {
+      setFeatures(f => updateNode(f, [nodeOpened.node_id], () => (newNode)))
+    }
   }
 
   const cancelEdit = () => {
@@ -278,36 +289,41 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
 
   return (
     <>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredNodes.map(({ status, nodes }) =>
-          <div key={status}
-            onDrop={(e) => {
-              e.preventDefault()
-              handleDrop(null, false, status)
-            }}
-            onDragOver={(e) => e.preventDefault()}
-          >
-            <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
-            {nodes.map((node: Node) =>
-              <NodeItem
-                key={node.node_id}
-                node={node}
-                level={0}
-                onToggle={toggleOpen}
-                onDelete={handleDelete}
-                onEdit={handleEdit}
-                onDragStart={handleDragStart}
-                onDrop={handleDrop}
-              />
-            )}
+      <div className={cn({'grid lg:grid-cols-6 gap-12': nodeOpened})}>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 col-span-5">
+          {filteredNodes.map(({ status, nodes }) =>
+            <div key={status}
+              onDrop={(e) => {
+                e.preventDefault()
+                handleDrop(null, false, status)
+              }}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <h2 className="mb-3 text-center font-bold text-lg">{status}</h2>
+              {nodes.map((node: Node) =>
+                <NodeItem
+                  key={node.node_id}
+                  node={node}
+                  level={0}
+                  onToggle={toggleOpen}
+                  onDelete={handleDelete}
+                  onEdit={handleEdit}
+                  onDragStart={handleDragStart}
+                  onDrop={handleDrop}
+                  onSelect={handleSelect}
+                />
+              )}
 
-            {status === 'Backlog' &&
-              <Button className="block w-full" onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
-                Ajouter
-              </Button>
-            }
-          </div>
-        )}
+              {status === 'Backlog' &&
+                <Button className="block w-full" onClick={() => handleAdd(null, { name: 'test', node_id: nextId++, type: 'Feature', description: 'ok', childrens: [], start_date: '', end_date: '', status: "Backlog", open: true })}>
+                  Ajouter
+                </Button>
+              }
+            </div>
+          )}
+        </div>
+
+        {nodeOpened && <NodeDisplay node={nodeOpened} onConfirm={confirmEdit} />}
       </div>
 
       {nodeToBeEdited && <NodeModal node={nodeToBeEdited} onClose={cancelEdit} onConfirm={confirmEdit} />}
