@@ -208,8 +208,10 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
     dragged.current = node
   }, [])
 
-  const handleDrop = useCallback((node: Node | null, asParent: boolean = false, status: string | null = null) => {
+  const handleDrop = useCallback((event: DragEvent<Element>, node: Node | null, asParent: boolean = false, status: string | null = null) => {
     if (dragged.current && dragged.current.node_id !== node?.node_id) {
+      event.stopPropagation()
+
       const sourceNode = dragged.current
       sourceNode.status = (asParent) ? node?.status || sourceNode.status : status || sourceNode.status
 
@@ -266,9 +268,7 @@ const Tree: React.FC<Props> = ({ nodes }: Props): JSX.Element => {
           <div key={status}
             onDrop={(e) => {
               e.preventDefault()
-              if (dragged.current?.status !== status && dragged.current?.type === 'Feature') {
-                handleDrop(null, false, status)
-              }
+              handleDrop(e, null, false, status)
             }}
             onDragOver={(e) => e.preventDefault()}
           >

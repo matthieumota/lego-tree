@@ -1,7 +1,7 @@
 'use client'
 
 import cn from 'classnames'
-import React from 'react'
+import React, { DragEvent } from 'react'
 import { Node } from './Tree'
 import Badge from './Badge'
 import Button from './Button'
@@ -13,18 +13,18 @@ interface Props {
   onDelete: (node: Node) => void,
   onEdit: (node: Node) => void,
   onDragStart: (node: Node) => void,
-  onDrop: (node: Node, asParent: boolean) => void,
+  onDrop: (event: DragEvent<Element>, node: Node, asParent: boolean) => void,
 }
 
 const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete, onEdit, onDragStart, onDrop }: Props): JSX.Element => {
   console.log(`RENDU ${node.node_id}`)
 
-  const handleDrop = (asParent: boolean) => {
+  const handleDrop = (event: DragEvent<Element>, asParent: boolean) => {
     if (level === 2 && asParent) {
       return
     }
 
-    onDrop(node, asParent)
+    onDrop(event, node, asParent)
   }
 
   return (
@@ -40,7 +40,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         <div onClick={() => onToggle(node.node_id)} className="p-4 cursor-pointer flex items-center justify-between"
           draggable
           onDragStart={() => onDragStart(node)}
-          onDrop={() => handleDrop(false)}
+          onDrop={(e) => handleDrop(e, false)}
           onDragOver={(e) => e.preventDefault()}
         >
           <div>
@@ -53,7 +53,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
         </div>
 
         {node.open &&
-          <div className="p-4" onDrop={() => handleDrop(true)} onDragOver={(e) => e.preventDefault()}>
+          <div className="p-4" onDrop={(e) => handleDrop(e, true)} onDragOver={(e) => e.preventDefault()}>
             <div className="mb-4">
             <p className="text-gray-500 text-center">{node.type}</p>
               <p className="text-gray-500 text-center">{node.description}</p>
