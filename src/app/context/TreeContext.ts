@@ -8,7 +8,6 @@ export interface TreeContextType {
   onDragStart: (node: Node) => void,
   onDrop: (node: Node, asParent: boolean) => void,
   onSelect: (node: Node) => void,
-  nodeOpened: Node | null
 }
 
 export const TreeContext = createContext<TreeContextType>({
@@ -18,5 +17,12 @@ export const TreeContext = createContext<TreeContextType>({
   onDragStart: () => {},
   onDrop: () => {},
   onSelect: () => {},
+})
+
+export interface GlobalContextType {
+  nodeOpened: Node | null,
+}
+
+export const GlobalContext = createContext<GlobalContextType>({
   nodeOpened: null,
 })
