@@ -72,7 +72,7 @@ const NodeModal: React.FC<Props> = ({ node, onClose, onConfirm }: Props): JSX.El
       >
         <div className="fixed inset-0 flex items-center justify-center p-4">
           <DialogPanel className="max-w-screen-md w-screen space-y-4 border bg-white p-6 rounded-xl shadow-xl">
-            <DialogTitle className="font-bold">Noeud {node?.node_id}</DialogTitle>
+            <DialogTitle className="font-bold">{newNode.type} {node?.node_id}</DialogTitle>
             <form onSubmit={() => onConfirm(newNode)}>
               <div className="mb-3">
                 <label htmlFor="name" className="block mb-2">Nom</label>

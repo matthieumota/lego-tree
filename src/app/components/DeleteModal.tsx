@@ -20,8 +20,8 @@ const DeleteModal: React.FC<Props> = ({ node, onClose, onConfirm }: Props): JSX.
       >
         <div className="fixed inset-0 flex w-screen items-center justify-center p-4">
           <DialogPanel className="max-w-lg space-y-4 border bg-white p-6 rounded-xl shadow-xl">
-            <DialogTitle className="font-bold">Supprimer le noeud {node?.name}</DialogTitle>
-            <Description>Êtes-vous sûr de vouloir supprimer ce noeud et ses enfants?</Description>
+            <DialogTitle className="font-bold">Supprimer le noeud {node?.type} {node?.name}</DialogTitle>
+            <Description>Êtes-vous sûr de vouloir supprimer ce noeud {node?.type} et ses enfants?</Description>
             <div className="flex gap-4 flex-row-reverse">
               <Button onClick={onConfirm} className="!bg-red-600 hover:!bg-red-500 text-white">Supprimer</Button>
               <Button onClick={onClose}>Annuler</Button>

@@ -26,7 +26,7 @@ const NodeDisplay: React.FC<Props> = ({ node, onConfirm }: Props): JSX.Element |
 
   return (
     <div>
-      <h2 className="font-bold">Noeud {node?.node_id}</h2>
+      <h2 className="font-bold">{newNode.type} {node?.node_id}</h2>
 
       <form onSubmit={(e) => e.preventDefault()}>
         <div className="mb-3">
@@ -67,7 +67,7 @@ const NodeDisplay: React.FC<Props> = ({ node, onConfirm }: Props): JSX.Element |
           <input className="w-full" type="date" id="end_date" value={newNode.end_date} onChange={(e) => handleChange(e, 'end_date')} />
         </div>
 
-        {newNode.childrens.length > 0 && newNode.open &&
+        {newNode.childrens.length > 0 &&
           <>
             {newNode.childrens.map((child) => (
               <NodeItem key={child.node_id} node={child} level={1} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} onDragStart={onDragStart} onDrop={onDrop} onSelect={onSelect} />

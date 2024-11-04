@@ -35,9 +35,6 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
   return (
     <>
       <div className={cn(`border shadow rounded-lg mb-4`, {
-        'ml-0': level == 0,
-        'ml-8': level == 1,
-        'ml-16': level == 2,
         'bg-slate-50': node.type === 'Feature',
         'bg-green-50': node.type === 'User Story',
         'bg-blue-50': node.type === 'Task',
@@ -63,7 +60,7 @@ const NodeItem: React.FC<Props> = React.memo(({ node, level, onToggle, onDelete,
             <p className="text-gray-500 text-center">{node.type}</p>
               <p className="text-gray-500 text-center">{node.description}</p>
               <p className="text-sm text-gray-500 text-center">{node.start_date} - {node.end_date}</p>
-              <div className="text-center">
+              <div className="text-center mt-4">
                 <Button onClick={() => onSelect(node)}>
                   {nodeOpened && nodeOpened.node_id === node.node_id ? 'Fermer' : 'Ouvrir'}
                 </Button>
